@@ -32,7 +32,7 @@ export default function RegisterForm() {
     username: '',
     email: '',
     password: '',
-    role: UserRole.ANAKREMAS,
+    role: 'anakremas' as UserRole,
     groupId: '',
   });
 

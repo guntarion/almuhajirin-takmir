@@ -1,7 +1,7 @@
 // src/lib/utils/auth.ts
 
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '../auth';
 import { UserRole, type AuthSession } from '../types/auth';
 import { redirect } from 'next/navigation';
 
@@ -15,12 +15,12 @@ export async function getCurrentUser() {
 }
 
 export const ROLES_HIERARCHY = {
-  [UserRole.ADMIN]: [UserRole.ADMIN, UserRole.TAKMIR, UserRole.MARBOT, UserRole.ORANGTUAWALI, UserRole.KOORDINATOR_ANAKREMAS, UserRole.ANAKREMAS],
-  [UserRole.TAKMIR]: [UserRole.TAKMIR, UserRole.MARBOT, UserRole.ORANGTUAWALI, UserRole.KOORDINATOR_ANAKREMAS, UserRole.ANAKREMAS],
-  [UserRole.MARBOT]: [UserRole.MARBOT, UserRole.ORANGTUAWALI, UserRole.KOORDINATOR_ANAKREMAS, UserRole.ANAKREMAS],
-  [UserRole.ORANGTUAWALI]: [UserRole.ORANGTUAWALI],
-  [UserRole.KOORDINATOR_ANAKREMAS]: [UserRole.KOORDINATOR_ANAKREMAS, UserRole.ANAKREMAS],
-  [UserRole.ANAKREMAS]: [UserRole.ANAKREMAS],
+  admin: ['admin', 'takmir', 'marbot', 'orangtuawali', 'koordinator_anakremas', 'anakremas'],
+  takmir: ['takmir', 'marbot', 'orangtuawali', 'koordinator_anakremas', 'anakremas'],
+  marbot: ['marbot', 'orangtuawali', 'koordinator_anakremas', 'anakremas'],
+  orangtuawali: ['orangtuawali'],
+  koordinator_anakremas: ['koordinator_anakremas', 'anakremas'],
+  anakremas: ['anakremas'],
 };
 
 export function canAccess(userRole: UserRole, requiredRole: UserRole): boolean {
@@ -39,12 +39,12 @@ export function checkAccess(session: AuthSession | null, requiredRole: UserRole)
 }
 
 export const DEFAULT_REDIRECT_PATH: Record<UserRole, string> = {
-  [UserRole.ADMIN]: '/admin/dashboard',
-  [UserRole.TAKMIR]: '/takmir/dashboard',
-  [UserRole.MARBOT]: '/marbot/dashboard',
-  [UserRole.ORANGTUAWALI]: '/orangtua/dashboard',
-  [UserRole.KOORDINATOR_ANAKREMAS]: '/koordinator/dashboard',
-  [UserRole.ANAKREMAS]: '/dashboard',
+  admin: '/admin/dashboard',
+  takmir: '/takmir/dashboard',
+  marbot: '/marbot/dashboard',
+  orangtuawali: '/orangtua/dashboard',
+  koordinator_anakremas: '/koordinator/dashboard',
+  anakremas: '/dashboard',
 };
 
 export function getRedirectPath(role: UserRole): string {

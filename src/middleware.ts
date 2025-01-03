@@ -2,25 +2,11 @@
 
 import { withAuth } from 'next-auth/middleware';
 import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
 import { UserRole } from './lib/types/auth';
-
-// Define public routes that don't require authentication
-const publicRoutes = [
-  '/',
-  '/auth/login',
-  '/auth/register',
-  '/auth/forgot-password',
-  '/api/auth',
-  '/_next',
-  '/favicon.ico',
-  '/manifest.json',
-  '/icons',
-];
 
 // Define role-based route access with dashboard routes
 const roleAccess: Record<UserRole, string[]> = {
-  [UserRole.ADMIN]: [
+  admin: [
     '/admin',
     '/admin/dashboard',
     '/takmir',
@@ -37,7 +23,7 @@ const roleAccess: Record<UserRole, string[]> = {
     '/leaderboard',
     '/profil',
   ],
-  [UserRole.TAKMIR]: [
+  takmir: [
     '/takmir',
     '/takmir/dashboard',
     '/marbot',
@@ -50,7 +36,7 @@ const roleAccess: Record<UserRole, string[]> = {
     '/leaderboard',
     '/profil',
   ],
-  [UserRole.MARBOT]: [
+  marbot: [
     '/marbot',
     '/marbot/dashboard',
     '/koordinator',
@@ -61,17 +47,9 @@ const roleAccess: Record<UserRole, string[]> = {
     '/leaderboard',
     '/profil',
   ],
-  [UserRole.KOORDINATOR_ANAKREMAS]: [
-    '/koordinator',
-    '/koordinator/dashboard',
-    '/anakremas',
-    '/anakremas/dashboard',
-    '/aktivitas',
-    '/leaderboard',
-    '/profil',
-  ],
-  [UserRole.ANAKREMAS]: ['/anakremas', '/anakremas/dashboard', '/aktivitas', '/leaderboard', '/profil'],
-  [UserRole.ORANGTUAWALI]: ['/orangtua', '/orangtua/dashboard', '/leaderboard', '/profil'],
+  koordinator_anakremas: ['/koordinator', '/koordinator/dashboard', '/anakremas', '/anakremas/dashboard', '/aktivitas', '/leaderboard', '/profil'],
+  anakremas: ['/anakremas', '/anakremas/dashboard', '/aktivitas', '/leaderboard', '/profil'],
+  orangtuawali: ['/orangtua', '/orangtua/dashboard', '/leaderboard', '/profil'],
 };
 
 // Helper function to check if a path matches any of the allowed routes
@@ -79,48 +57,9 @@ const isPathAllowed = (path: string, allowedRoutes: string[]): boolean => {
   return allowedRoutes.some((route) => path.startsWith(route));
 };
 
-// Helper function to check if a path is public
-const isPublicPath = (path: string): boolean => {
-  return publicRoutes.some(
-    (route) =>
-      path === route ||
-      path.startsWith('/api/auth/') ||
-      path.startsWith('/_next/') ||
-      path.startsWith('/favicon.ico') ||
-      path.startsWith('/manifest.json') ||
-      path.startsWith('/icons/')
-  );
-};
-
 export default withAuth(
-  function middleware(request: NextRequest) {
-    const path = request.nextUrl.pathname;
-
-    const token = request.cookies.get('next-auth.session-token')?.value;
-
-    // Allow public routes
-    if (isPublicPath(path)) {
-      return NextResponse.next();
-    }
-
-    // If no token, redirect to login
-    if (!token) {
-      const loginUrl = new URL('/auth/login', request.url);
-      loginUrl.searchParams.set('callbackUrl', path);
-      return NextResponse.redirect(loginUrl);
-    }
-
-    // Check role-based access
-    const parsedToken = JSON.parse(token);
-    const userRole = parsedToken.role as UserRole;
-    const allowedRoutes = roleAccess[userRole];
-
-    if (!allowedRoutes || !isPathAllowed(path, allowedRoutes)) {
-      // Redirect to default route based on role
-      const defaultRoute = roleAccess[userRole][0] || '/';
-      return NextResponse.redirect(new URL(defaultRoute, request.url));
-    }
-
+  // Simple middleware that lets NextAuth.js handle everything
+  function middleware() {
     return NextResponse.next();
   },
   {

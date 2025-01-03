@@ -1,13 +1,7 @@
 // src/lib/types/auth.ts
 
-export enum UserRole {
-  ADMIN = 'admin',
-  TAKMIR = 'takmir',
-  MARBOT = 'marbot',
-  KOORDINATOR_ANAKREMAS = 'koordinator_anakremas',
-  ANAKREMAS = 'anakremas',
-  ORANGTUAWALI = 'orangtua_wali',
-}
+import { UserRole } from '@prisma/client';
+export { UserRole };
 
 export interface LoginFormData {
   emailOrUsername: string;
