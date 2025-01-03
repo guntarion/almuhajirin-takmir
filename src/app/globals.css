@@ -2,6 +2,19 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Custom styles */
+.sidebar-link {
+  transition: all 0.2s ease;
+}
+
+.sidebar-link:hover {
+  transform: translateX(4px);
+}
+
+.main-content {
+  min-height: calc(100vh - 4rem);
+}
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
