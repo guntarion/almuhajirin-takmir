@@ -6,7 +6,17 @@ import type { NextRequest } from 'next/server';
 import { UserRole } from './lib/types/auth';
 
 // Define public routes that don't require authentication
-const publicRoutes = ['/', '/auth/login', '/auth/register', '/auth/forgot-password', '/api/auth'];
+const publicRoutes = [
+  '/',
+  '/auth/login',
+  '/auth/register',
+  '/auth/forgot-password',
+  '/api/auth',
+  '/_next',
+  '/favicon.ico',
+  '/manifest.json',
+  '/icons',
+];
 
 // Define role-based route access with dashboard routes
 const roleAccess: Record<UserRole, string[]> = {
@@ -86,9 +96,29 @@ export default withAuth(
   function middleware(request: NextRequest) {
     const path = request.nextUrl.pathname;
 
+    const token = request.cookies.get('next-auth.session-token')?.value;
+
     // Allow public routes
     if (isPublicPath(path)) {
       return NextResponse.next();
+    }
+
+    // If no token, redirect to login
+    if (!token) {
+      const loginUrl = new URL('/auth/login', request.url);
+      loginUrl.searchParams.set('callbackUrl', path);
+      return NextResponse.redirect(loginUrl);
+    }
+
+    // Check role-based access
+    const parsedToken = JSON.parse(token);
+    const userRole = parsedToken.role as UserRole;
+    const allowedRoutes = roleAccess[userRole];
+
+    if (!allowedRoutes || !isPathAllowed(path, allowedRoutes)) {
+      // Redirect to default route based on role
+      const defaultRoute = roleAccess[userRole][0] || '/';
+      return NextResponse.redirect(new URL(defaultRoute, request.url));
     }
 
     return NextResponse.next();

@@ -38,8 +38,8 @@ export const authOptions: NextAuthOptions = {
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   pages: {
-    signIn: '/login',
-    error: '/login',
+    signIn: '/auth/login',
+    error: '/auth/login',
   },
   providers: [
     CredentialsProvider({
@@ -80,6 +80,13 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
+    async redirect({ url, baseUrl }) {
+      // Allows relative callback URLs
+      if (url.startsWith('/')) return `${baseUrl}${url}`;
+      // Allows callback URLs on the same origin
+      else if (new URL(url).origin === baseUrl) return url;
+      return baseUrl;
+    },
     async jwt({ token, user }) {
       if (user) {
         return {
@@ -103,10 +110,14 @@ export const authOptions: NextAuthOptions = {
       };
     },
   },
+  events: {
+    signOut: async () => {
+      // Perform any cleanup needed on logout
+    },
+  },
 };
 
 export const getAuthSession = () => getServerSession(authOptions);
 
-export const {
-  handlers: { GET, POST },
-} = NextAuth(authOptions);
+const handler = NextAuth(authOptions);
+export { handler as GET, handler as POST };

@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { z } from 'zod';
-import { LoginFormData, UserRole } from '../../lib/types/auth';
+import { LoginFormData } from '../../lib/types/auth';
 
 const loginSchema = z.object({
   emailOrUsername: z.string().min(1, 'Email/Username harus diisi'),
@@ -44,6 +44,7 @@ export default function LoginForm() {
         emailOrUsername: formData.emailOrUsername,
         password: formData.password,
         redirect: false,
+        callbackUrl: '/profil',
         rememberMe: formData.rememberMe,
       });
 
@@ -52,38 +53,14 @@ export default function LoginForm() {
         return;
       }
 
-      // Get user role from session
-      const response = await fetch('/api/auth/session');
-      const session = await response.json();
-
-      // Redirect based on role
-      const redirectPath = getRedirectPath(session.user.role);
-      router.push(redirectPath);
+      // Redirect to callback URL or default path
+      router.push(result?.url || '/profil');
       router.refresh();
     } catch (error) {
       console.error('Login error:', error);
       setError('Terjadi kesalahan. Silakan coba lagi.');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const getRedirectPath = (role: UserRole) => {
-    switch (role) {
-      case UserRole.ADMIN:
-        return '/admin/dashboard';
-      case UserRole.TAKMIR:
-        return '/takmir/dashboard';
-      case UserRole.MARBOT:
-        return '/marbot/dashboard';
-      case UserRole.KOORDINATOR_ANAKREMAS:
-        return '/koordinator/dashboard';
-      case UserRole.ANAKREMAS:
-        return '/dashboard';
-      case UserRole.ORANGTUAWALI:
-        return '/orangtua/dashboard';
-      default:
-        return '/dashboard';
     }
   };
 
