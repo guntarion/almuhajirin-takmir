@@ -44,7 +44,7 @@ export default function LoginForm() {
         emailOrUsername: formData.emailOrUsername,
         password: formData.password,
         redirect: false,
-        callbackUrl: '/profil',
+        callbackUrl: '/home',
         rememberMe: formData.rememberMe,
       });
 
@@ -54,7 +54,7 @@ export default function LoginForm() {
       }
 
       // Redirect to callback URL or default path
-      router.push(result?.url || '/profil');
+      router.push(result?.url || '/home');
       router.refresh();
     } catch (error) {
       console.error('Login error:', error);

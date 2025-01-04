@@ -22,6 +22,9 @@ const roleAccess: Record<UserRole, string[]> = {
     '/aktivitas',
     '/leaderboard',
     '/profil',
+    '/home',
+    '/kelola-user',
+    '/api/users',
   ],
   takmir: [
     '/takmir',
@@ -35,6 +38,9 @@ const roleAccess: Record<UserRole, string[]> = {
     '/aktivitas',
     '/leaderboard',
     '/profil',
+    '/home',
+    '/kelola-user',
+    '/api/users',
   ],
   marbot: [
     '/marbot',
@@ -46,10 +52,20 @@ const roleAccess: Record<UserRole, string[]> = {
     '/aktivitas',
     '/leaderboard',
     '/profil',
+    '/home',
   ],
-  koordinator_anakremas: ['/koordinator', '/koordinator/dashboard', '/anakremas', '/anakremas/dashboard', '/aktivitas', '/leaderboard', '/profil'],
-  anakremas: ['/anakremas', '/anakremas/dashboard', '/aktivitas', '/leaderboard', '/profil'],
-  orangtuawali: ['/orangtua', '/orangtua/dashboard', '/leaderboard', '/profil'],
+  koordinator_anakremas: [
+    '/koordinator',
+    '/koordinator/dashboard',
+    '/anakremas',
+    '/anakremas/dashboard',
+    '/aktivitas',
+    '/leaderboard',
+    '/home',
+    '/profil',
+  ],
+  anakremas: ['/anakremas', '/anakremas/dashboard', '/aktivitas', '/leaderboard', '/home', '/profil'],
+  orangtuawali: ['/orangtua', '/orangtua/dashboard', '/leaderboard', '/home', '/profil'],
 };
 
 // Helper function to check if a path matches any of the allowed routes
@@ -99,7 +115,9 @@ export const config = {
      * 3. favicon.ico (favicon file)
      * 4. public folder
      * 5. auth/register (register page)
+     * 6. auth/login (login page)
      */
-    '/((?!_next/static|_next/image|favicon.ico|public/|auth/register).*)',
+    '/((?!_next/static|_next/image|favicon.ico|public/|auth/register|auth/login).*)',
+    '/api/:path*',
   ],
 };

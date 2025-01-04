@@ -3,9 +3,10 @@
 
 import { Geist, Geist_Mono } from 'next/font/google';
 import Providers from '../components/auth/Providers';
-import { User, Activity, Trophy, Menu } from 'lucide-react';
+import { Home, UserCog, Users, Activity, Trophy, Menu } from 'lucide-react';
 import { LogoutButton } from '../components/auth/LogoutButton';
 import './globals.css';
+// import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
 
@@ -49,7 +50,7 @@ export default function RootLayout({
             >
               <div className='flex items-center justify-between mb-8'>
                 <Link href='/' className='flex items-center gap-2'>
-                  {/* <img src='/logo-yamr.png' alt='Logo' className='w-8 h-8' /> */}
+                  {/* <Image src='/logo-yamr.png' alt='Logo' width={32} height={32} /> */}
                   <h1 className='text-xl font-bold'>Al-Muhajirin</h1>
                 </Link>
                 <button onClick={() => setIsSidebarOpen(false)} className='p-1 md:hidden'>
@@ -57,8 +58,12 @@ export default function RootLayout({
                 </button>
               </div>
               <nav>
+                <Link href='/home' className='flex items-center p-2 rounded-lg hover:bg-gray-700'>
+                  <Home className='w-5 h-5 mr-2' />
+                  <span>Home</span>
+                </Link>
                 <Link href='/profil' className='flex items-center p-2 rounded-lg hover:bg-gray-700'>
-                  <User className='w-5 h-5 mr-2' />
+                  <UserCog className='w-5 h-5 mr-2' />
                   <span>Profil</span>
                 </Link>
                 <Link href='/aktivitas' className='flex items-center p-2 rounded-lg hover:bg-gray-700 mt-2'>
@@ -68,6 +73,10 @@ export default function RootLayout({
                 <Link href='/leaderboard' className='flex items-center p-2 rounded-lg hover:bg-gray-700 mt-2'>
                   <Trophy className='w-5 h-5 mr-2' />
                   <span>Leaderboard</span>
+                </Link>
+                <Link href='/kelola-user' className='flex items-center p-2 rounded-lg hover:bg-gray-700 mt-2'>
+                  <Users className='w-5 h-5 mr-2' />
+                  <span>Kelola User</span>
                 </Link>
                 <div className='mt-4 border-t border-gray-700 pt-4'>
                   <LogoutButton />
