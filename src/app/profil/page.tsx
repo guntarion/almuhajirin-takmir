@@ -128,9 +128,11 @@ export default function ProfilePage() {
     setFormData((prev) => ({ ...prev, avatar: avatarPath }));
   };
 
-  // Handle form submission
-  const handleSubmit = async (e: React.FormEvent) => {
+  // Handle save changes
+  const handleSaveChanges = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('Save Changes button clicked - attempting to save form data');
+
     setIsLoading(true);
     setMessage({ type: '', content: '' });
 
@@ -167,6 +169,20 @@ export default function ProfilePage() {
     }
 
     try {
+      console.log('Making API call to:', '/api/users/profile');
+      console.log('Request payload:', {
+        name: formData.name,
+        email: formData.email,
+        avatar: formData.avatar,
+        tanggalLahir: formData.birthDate || null,
+        nomerWhatsapp: formData.whatsapp,
+        alamatRumah: formData.address,
+        rwRumah: formData.rw,
+        rtRumah: formData.rt,
+        sekolah: formData.school,
+        keterangan: formData.keterangan,
+      });
+
       const response = await fetch('/api/users/profile', {
         method: 'PATCH',
         headers: {
@@ -185,6 +201,8 @@ export default function ProfilePage() {
           keterangan: formData.keterangan,
         }),
       });
+
+      console.log('API response status:', response.status);
 
       const data = await response.json();
 
@@ -275,89 +293,106 @@ export default function ProfilePage() {
         </div>
 
         {/* Form Section */}
-        <form onSubmit={handleSubmit} className='md:col-span-2 space-y-4'>
-          {/* Name and Birth Date Row */}
-          <div className='grid grid-cols-2 gap-4'>
-            <div className='space-y-2'>
-              <label className='block text-sm font-medium'>Nama Display</label>
-              <Input type='text' name='name' value={formData.name} onChange={handleInputChange} disabled={!isEditing} required />
-            </div>
-            <div className='space-y-2'>
-              <label className='block text-sm font-medium'>Tanggal Lahir</label>
-              <Input type='date' name='birthDate' value={formData.birthDate} onChange={handleInputChange} disabled={!isEditing} />
-            </div>
-          </div>
-
-          {/* Email and WhatsApp Row */}
-          <div className='grid grid-cols-2 gap-4'>
-            <div className='space-y-2'>
-              <label className='block text-sm font-medium'>Email</label>
-              <Input type='email' name='email' value={formData.email} onChange={handleInputChange} disabled={!isEditing} required />
-            </div>
-            <div className='space-y-2'>
-              <label className='block text-sm font-medium'>Nomer WhatsApp</label>
-              <Input
-                type='tel'
-                name='whatsapp'
-                value={formData.whatsapp}
-                onChange={handleInputChange}
-                disabled={!isEditing}
-                placeholder='Contoh: 081234567890'
-                required
-              />
-            </div>
-          </div>
-
-          <div className='space-y-2'>
-            <label className='block text-sm font-medium'>Alamat</label>
-            <Input type='text' name='address' value={formData.address} onChange={handleInputChange} disabled={!isEditing} />
-          </div>
-
-          <div className='grid grid-cols-2 gap-4'>
-            <div className='space-y-2'>
-              <label className='block text-sm font-medium'>RW</label>
-              <Select name='rw' value={formData.rw} onChange={handleInputChange} disabled={!isEditing} options={RW_OPTIONS} />
-            </div>
-            <div className='space-y-2'>
-              <label className='block text-sm font-medium'>RT</label>
-              <Select name='rt' value={formData.rt} onChange={handleInputChange} disabled={!isEditing} options={RT_OPTIONS} />
-            </div>
-          </div>
-
-          <div className='space-y-2'>
-            <label className='block text-sm font-medium'>Sekolah</label>
-            <Input type='text' name='school' value={formData.school} onChange={handleInputChange} disabled={!isEditing} />
-          </div>
-
-          <div className='space-y-2'>
-            <label className='block text-sm font-medium'>Keterangan</label>
-            <textarea
-              name='keterangan'
-              value={formData.keterangan}
-              onChange={handleInputChange}
-              disabled={!isEditing}
-              className='w-full px-3 py-2 border rounded-md'
-              rows={4}
-            />
-          </div>
-
-          <div className='flex gap-4 pt-4'>
-            {!isEditing ? (
-              <Button type='button' onClick={() => setIsEditing(true)} className='bg-blue-500 hover:bg-blue-600 text-white'>
+        <div className='md:col-span-2'>
+          {/* Edit Profile Button */}
+          {!isEditing && (
+            <div className='mb-4'>
+              <Button
+                type='button'
+                onClick={() => {
+                  console.log('Edit Profile button clicked - entering edit mode');
+                  setIsEditing(true);
+                  setMessage({ type: '', content: '' });
+                }}
+                className='bg-blue-500 hover:bg-blue-600 text-white'
+              >
                 Edit Profil
               </Button>
-            ) : (
-              <>
-                <Button type='submit' className='bg-green-500 hover:bg-green-600 text-white'>
-                  Simpan Perubahan
-                </Button>
-                <Button type='button' onClick={handleCancel} className='bg-gray-500 hover:bg-gray-600 text-white'>
-                  Batal
-                </Button>
-              </>
+            </div>
+          )}
+
+          {/* Profile Fields */}
+          <div className='space-y-4'>
+            {/* Name and Birth Date Row */}
+            <div className='grid grid-cols-2 gap-4'>
+              <div className='space-y-2'>
+                <label className='block text-sm font-medium'>Nama Display</label>
+                <Input type='text' name='name' value={formData.name} onChange={handleInputChange} disabled={!isEditing} required />
+              </div>
+              <div className='space-y-2'>
+                <label className='block text-sm font-medium'>Tanggal Lahir</label>
+                <Input type='date' name='birthDate' value={formData.birthDate} onChange={handleInputChange} disabled={!isEditing} />
+              </div>
+            </div>
+
+            {/* Email and WhatsApp Row */}
+            <div className='grid grid-cols-2 gap-4'>
+              <div className='space-y-2'>
+                <label className='block text-sm font-medium'>Email</label>
+                <Input type='email' name='email' value={formData.email} onChange={handleInputChange} disabled={!isEditing} required />
+              </div>
+              <div className='space-y-2'>
+                <label className='block text-sm font-medium'>Nomer WhatsApp</label>
+                <Input
+                  type='tel'
+                  name='whatsapp'
+                  value={formData.whatsapp}
+                  onChange={handleInputChange}
+                  disabled={!isEditing}
+                  placeholder='Contoh: 081234567890'
+                  required
+                />
+              </div>
+            </div>
+
+            <div className='space-y-2'>
+              <label className='block text-sm font-medium'>Alamat</label>
+              <Input type='text' name='address' value={formData.address} onChange={handleInputChange} disabled={!isEditing} />
+            </div>
+
+            <div className='grid grid-cols-2 gap-4'>
+              <div className='space-y-2'>
+                <label className='block text-sm font-medium'>RW</label>
+                <Select name='rw' value={formData.rw} onChange={handleInputChange} disabled={!isEditing} options={RW_OPTIONS} />
+              </div>
+              <div className='space-y-2'>
+                <label className='block text-sm font-medium'>RT</label>
+                <Select name='rt' value={formData.rt} onChange={handleInputChange} disabled={!isEditing} options={RT_OPTIONS} />
+              </div>
+            </div>
+
+            <div className='space-y-2'>
+              <label className='block text-sm font-medium'>Sekolah</label>
+              <Input type='text' name='school' value={formData.school} onChange={handleInputChange} disabled={!isEditing} />
+            </div>
+
+            <div className='space-y-2'>
+              <label className='block text-sm font-medium'>Keterangan</label>
+              <textarea
+                name='keterangan'
+                value={formData.keterangan}
+                onChange={handleInputChange}
+                disabled={!isEditing}
+                className='w-full px-3 py-2 border rounded-md'
+                rows={4}
+              />
+            </div>
+
+            {/* Save/Cancel Form - Only shown in edit mode */}
+            {isEditing && (
+              <form onSubmit={handleSaveChanges}>
+                <div className='flex gap-4 pt-4'>
+                  <Button type='submit' className='bg-green-500 hover:bg-green-600 text-white'>
+                    Simpan Perubahan
+                  </Button>
+                  <Button type='button' onClick={handleCancel} className='bg-gray-500 hover:bg-gray-600 text-white'>
+                    Batal
+                  </Button>
+                </div>
+              </form>
             )}
           </div>
-        </form>
+        </div>
       </div>
     </div>
   );
