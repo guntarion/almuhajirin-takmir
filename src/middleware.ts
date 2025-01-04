@@ -75,7 +75,22 @@ const isPathAllowed = (path: string, allowedRoutes: string[]): boolean => {
 
 export default withAuth(
   // Simple middleware that lets NextAuth.js handle everything
-  function middleware() {
+  function middleware(req) {
+    const path = req.nextUrl.pathname;
+
+    // Skip authentication for static assets and public folder
+    if (
+      path.startsWith('/_next') || // Next.js internal files
+      path.startsWith('/public') || // Public folder
+      path.startsWith('/favicon.ico') || // Favicon
+      path.startsWith('/logo-yamr.png') || // Specific image
+      path.startsWith('/file.svg') || // Other static files
+      path.startsWith('/manifest.json') // Web app manifest
+    ) {
+      return NextResponse.next();
+    }
+
+    // Continue with authentication for other routes
     return NextResponse.next();
   },
   {
@@ -109,15 +124,21 @@ export default withAuth(
 export const config = {
   matcher: [
     /*
-     * Match all request paths except:
-     * 1. _next/static (static files)
-     * 2. _next/image (image optimization files)
-     * 3. favicon.ico (favicon file)
-     * 4. public folder
-     * 5. auth/register (register page)
-     * 6. auth/login (login page)
+     * Match specific routes that require authentication.
+     * This approach explicitly defines which routes should be protected
+     * rather than trying to exclude public assets.
      */
-    '/((?!_next/static|_next/image|favicon.ico|public/|auth/register|auth/login).*)',
-    '/api/:path*',
+    '/admin/:path*',
+    '/takmir/:path*',
+    '/marbot/:path*',
+    '/koordinator/:path*',
+    '/anakremas/:path*',
+    '/orangtua/:path*',
+    '/aktivitas/:path*',
+    '/leaderboard/:path*',
+    '/profil/:path*',
+    '/home/:path*',
+    '/kelola-user/:path*',
+    '/api/users/:path*',
   ],
 };

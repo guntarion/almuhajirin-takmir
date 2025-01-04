@@ -6,7 +6,7 @@ import Providers from '../components/auth/Providers';
 import { Home, UserCog, Users, Activity, Trophy, Menu } from 'lucide-react';
 import { LogoutButton } from '../components/auth/LogoutButton';
 import './globals.css';
-// import Image from 'next/image';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
 
@@ -50,7 +50,7 @@ export default function RootLayout({
             >
               <div className='flex items-center justify-between mb-8'>
                 <Link href='/' className='flex items-center gap-2'>
-                  {/* <Image src='/logo-yamr.png' alt='Logo' width={32} height={32} priority style={{ objectFit: 'contain' }} /> */}
+                  <Image src='/logo-yamr.png' alt='Logo' width={32} height={32} priority style={{ objectFit: 'contain' }} />
                   <h1 className='text-xl font-bold'>Al-Muhajirin</h1>
                 </Link>
                 <button onClick={() => setIsSidebarOpen(false)} className='p-1 md:hidden'>
