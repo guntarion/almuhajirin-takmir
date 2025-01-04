@@ -27,6 +27,7 @@ export default function RegisterForm() {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [associatedAnakremas, setAssociatedAnakremas] = useState<string>('');
   const [formData, setFormData] = useState<RegisterFormData>({
     name: '',
     username: '',
@@ -43,11 +44,18 @@ export default function RegisterForm() {
     try {
       // Validate form data
       registerSchema.parse(formData);
+
+      // Additional validation for orangtuawali role
+      if (formData.role === 'orangtuawali' && !associatedAnakremas.trim()) {
+        throw new Error('Orang tua/wali harus mengasosiasikan minimal satu anak remaja');
+      }
     } catch (err) {
       if (err instanceof z.ZodError) {
         setError(err.errors[0].message);
-        return;
+      } else if (err instanceof Error) {
+        setError(err.message);
       }
+      return;
     }
 
     setLoading(true);
@@ -58,7 +66,10 @@ export default function RegisterForm() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          associatedAnakremas: formData.role === 'orangtuawali' ? associatedAnakremas : null,
+        }),
       });
 
       if (!response.ok) {
@@ -149,23 +160,47 @@ export default function RegisterForm() {
               />
             </div>
             <div>
-              <label htmlFor='role' className='sr-only'>
-                Role
-              </label>
-              <select
-                id='role'
-                name='role'
-                required
-                className='appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 focus:z-10 sm:text-sm'
-                value={formData.role}
-                onChange={(e) => setFormData({ ...formData, role: e.target.value as UserRole })}
-              >
-                {Object.values(UserRole).map((role: UserRole) => (
-                  <option key={role} value={role}>
-                    {role}
-                  </option>
-                ))}
-              </select>
+              <div className='flex gap-4 pt-2 pb-2'>
+                <label className='flex items-center space-x-2'>
+                  <input
+                    type='radio'
+                    name='role'
+                    value='anakremas'
+                    checked={formData.role === 'anakremas'}
+                    onChange={(e) => setFormData({ ...formData, role: e.target.value as UserRole })}
+                    className='h-4 w-4 text-emerald-600 focus:ring-emerald-500 border-gray-300'
+                  />
+                  <span className='text-sm text-gray-700'>Muhajirin Kids</span>
+                </label>
+                <label className='flex items-center space-x-2'>
+                  <input
+                    type='radio'
+                    name='role'
+                    value='orangtuawali'
+                    checked={formData.role === 'orangtuawali'}
+                    onChange={(e) => setFormData({ ...formData, role: e.target.value as UserRole })}
+                    className='h-4 w-4 text-emerald-600 focus:ring-emerald-500 border-gray-300'
+                  />
+                  <span className='text-sm text-gray-700'>Orang Tua / Wali</span>
+                </label>
+              </div>
+
+              {formData.role === 'orangtuawali' && (
+                <div className='mt-4'>
+                  <label htmlFor='associatedAnakremas' className='block text-sm font-medium text-gray-700 mb-1'>
+                    Orang tua dari:
+                  </label>
+                  <input
+                    type='text'
+                    id='associatedAnakremas'
+                    value={associatedAnakremas}
+                    onChange={(e) => setAssociatedAnakremas(e.target.value)}
+                    required
+                    className='appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm'
+                    placeholder='Masukkan nama anak remaja'
+                  />
+                </div>
+              )}
             </div>
           </div>
 
@@ -173,7 +208,7 @@ export default function RegisterForm() {
             <button
               type='submit'
               disabled={loading}
-              className='group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed'
+              className='group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-[#3ec2c7] hover:bg-[#35a8ad] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#3ec2c7] disabled:opacity-50 disabled:cursor-not-allowed'
             >
               {loading ? (
                 <div className='flex items-center'>

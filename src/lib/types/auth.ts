@@ -16,6 +16,7 @@ export interface RegisterFormData {
   password: string;
   role: UserRole;
   groupId?: string;
+  associatedAnakremas?: string;
 }
 
 export interface SessionUser {

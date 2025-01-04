@@ -98,7 +98,8 @@ export const config = {
      * 2. _next/image (image optimization files)
      * 3. favicon.ico (favicon file)
      * 4. public folder
+     * 5. auth/register (register page)
      */
-    '/((?!_next/static|_next/image|favicon.ico|public/).*)',
+    '/((?!_next/static|_next/image|favicon.ico|public/|auth/register).*)',
   ],
 };

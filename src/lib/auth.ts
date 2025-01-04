@@ -1,3 +1,4 @@
+// src/lib/auth.ts
 import { compare } from 'bcryptjs';
 import { type NextAuthOptions } from 'next-auth';
 import { getServerSession } from 'next-auth/next';

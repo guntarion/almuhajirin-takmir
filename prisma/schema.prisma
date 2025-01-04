@@ -30,5 +30,21 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  orangTuaAnakRemasAsOrangTua OrangTuaAnakRemas[] @relation("orangTua")
+  orangTuaAnakRemasAsAnakRemas OrangTuaAnakRemas[] @relation("anakRemas")
+
   @@map("users")
+}
+
+model OrangTuaAnakRemas {
+  id          String   @id @default(cuid())
+  orangTuaId  String
+  anakRemasId String
+  createdAt   DateTime @default(now())
+  
+  orangTua  User @relation("orangTua", fields: [orangTuaId], references: [id])
+  anakRemas User @relation("anakRemas", fields: [anakRemasId], references: [id])
+
+  @@unique([orangTuaId, anakRemasId])
+  @@map("orang_tua_anak_remas")
 }

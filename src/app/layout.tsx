@@ -43,12 +43,15 @@ export default function RootLayout({
 
             {/* Sidebar */}
             <div
-              className={`fixed md:relative z-40 w-64 bg-gray-900 text-white p-4 transform transition-all duration-300 ease-in-out ${
+              className={`fixed md:relative z-40 w-64 bg-[#00879b] text-white p-4 transform transition-all duration-300 ease-in-out ${
                 isSidebarOpen ? 'translate-x-0 shadow-lg' : '-translate-x-full md:translate-x-0'
               }`}
             >
               <div className='flex items-center justify-between mb-8'>
-                <h1 className='text-xl font-bold'>Dashboard</h1>
+                <Link href='/' className='flex items-center gap-2'>
+                  {/* <img src='/logo-yamr.png' alt='Logo' className='w-8 h-8' /> */}
+                  <h1 className='text-xl font-bold'>Al-Muhajirin</h1>
+                </Link>
                 <button onClick={() => setIsSidebarOpen(false)} className='p-1 md:hidden'>
                   <Menu className='w-6 h-6 rotate-45' />
                 </button>

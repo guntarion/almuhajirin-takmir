@@ -28,6 +28,25 @@ export async function POST(request: Request) {
     // Hash password
     const hashedPassword = await hash(body.password, 12);
 
+    // Validate anakremas association for orangtuawali
+    if (body.role === 'orangtuawali') {
+      if (!body.associatedAnakremas) {
+        return NextResponse.json({ user: null, message: 'Harus memilih anakremas yang diasuh' }, { status: 400 });
+      }
+
+      // Check if anakremas exists
+      const anakremas = await prisma.user.findUnique({
+        where: {
+          username: body.associatedAnakremas,
+          role: 'anakremas',
+        },
+      });
+
+      if (!anakremas) {
+        return NextResponse.json({ user: null, message: `Username Muhajirin Kids "${body.associatedAnakremas}" tidak ditemukan` }, { status: 404 });
+      }
+    }
+
     // Create new user
     const newUser = await prisma.user.create({
       data: {
@@ -39,6 +58,22 @@ export async function POST(request: Request) {
         groupId: body.groupId,
       },
     });
+
+    // Create relationship if orangtuawali
+    if (body.role === 'orangtuawali' && body.associatedAnakremas) {
+      const anakremas = await prisma.user.findUnique({
+        where: { username: body.associatedAnakremas },
+      });
+
+      if (anakremas) {
+        await prisma.orangTuaAnakRemas.create({
+          data: {
+            orangTuaId: newUser.id,
+            anakRemasId: anakremas.id,
+          },
+        });
+      }
+    }
 
     return NextResponse.json({ user: newUser, message: 'Registrasi berhasil' }, { status: 201 });
   } catch (error) {
