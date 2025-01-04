@@ -50,7 +50,7 @@ export default function RootLayout({
             >
               <div className='flex items-center justify-between mb-8'>
                 <Link href='/' className='flex items-center gap-2'>
-                  {/* <Image src='/logo-yamr.png' alt='Logo' width={32} height={32} /> */}
+                  {/* <Image src='/logo-yamr.png' alt='Logo' width={32} height={32} priority style={{ objectFit: 'contain' }} /> */}
                   <h1 className='text-xl font-bold'>Al-Muhajirin</h1>
                 </Link>
                 <button onClick={() => setIsSidebarOpen(false)} className='p-1 md:hidden'>

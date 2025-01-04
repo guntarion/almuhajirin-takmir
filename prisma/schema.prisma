@@ -19,19 +19,29 @@ enum UserRole {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  name      String
-  username  String   @unique
-  email     String   @unique
-  password  String
-  role      UserRole
-  active    Boolean  @default(true)
-  groupId   String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            String    @id @default(cuid())
+  name          String
+  username      String    @unique
+  email         String    @unique
+  password      String
+  role          UserRole
+  active        Boolean   @default(true)
+  groupId       String?
+  // New fields for profile
+  avatar        String?   @default("/avatars/avatar-01.jpg")
+  tanggalLahir  DateTime?
+  nomerWhatsapp String?
+  alamatRumah   String?
+  rwRumah       String?
+  rtRumah       String?
+  sekolah       String?
+  keterangan    String?
+  // Timestamps
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
-  orangTuaAnakRemasAsOrangTua OrangTuaAnakRemas[] @relation("orangTua")
-  orangTuaAnakRemasAsAnakRemas OrangTuaAnakRemas[] @relation("anakRemas")
+  orangTuaAnakRemasAsOrangTua    OrangTuaAnakRemas[] @relation("orangTua")
+  orangTuaAnakRemasAsAnakRemas   OrangTuaAnakRemas[] @relation("anakRemas")
 
   @@map("users")
 }
