@@ -6,148 +6,203 @@
  * Includes form validation and preview functionality.
  */
 
-import { useState } from 'react';
-import { Button } from '../ui/button';
-import { CreatePostData, PostCategory } from '../../lib/types/bbs';
+// File: src/components/CreatePostForm.tsx
 
+import React, { useState } from 'react';
+import { Editor, EditorState, RichUtils, convertToRaw } from 'draft-js';
+import 'draft-js/dist/Draft.css';
+import { Button } from '../../components/ui/button';
+
+// Define TypeScript interfaces
 interface CreatePostFormProps {
+  onSubmit: (data: PostData) => void;
   onClose: () => void;
-  onSubmit: (post: CreatePostData) => void;
 }
 
-export default function CreatePostForm({ onClose, onSubmit }: CreatePostFormProps) {
+interface PostData {
+  title: string;
+  content: string;
+  category: PostCategory;
+}
+
+type PostCategory = 'Pengumuman' | 'Kajian' | 'Kegiatan' | 'Rapat' | 'Lainnya';
+
+const CreatePostForm: React.FC<CreatePostFormProps> = ({ onSubmit, onClose }) => {
+  // State management
   const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
   const [category, setCategory] = useState<PostCategory>('Pengumuman');
+  const [editorState, setEditorState] = useState(() => EditorState.createEmpty());
   const [isPreview, setIsPreview] = useState(false);
 
+  // Available categories
   const categories: PostCategory[] = ['Pengumuman', 'Kajian', 'Kegiatan', 'Rapat', 'Lainnya'];
 
+  // Handle form submission
   const handleSubmit = (e?: React.FormEvent) => {
     e?.preventDefault();
+    const contentState = editorState.getCurrentContent();
+    const rawContent = convertToRaw(contentState);
     onSubmit({
       title,
-      content,
+      content: JSON.stringify(rawContent),
       category,
     });
   };
 
-  return (
-    <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50'>
-      <div className='bg-white rounded-lg w-full max-w-3xl max-h-[90vh] overflow-y-auto'>
-        <div className='p-6 space-y-6'>
-          <div className='flex justify-between items-center border-b pb-4'>
-            <h2 className='text-2xl font-semibold text-gray-900'>{isPreview ? 'Preview Pengumuman' : 'Buat Pengumuman Baru'}</h2>
-            <button onClick={onClose} className='text-gray-400 hover:text-gray-500' aria-label='Tutup'>
-              <svg className='h-6 w-6' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
-                <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M6 18L18 6M6 6l12 12' />
-              </svg>
-            </button>
-          </div>
+  // Handle keyboard commands
+  const handleKeyCommand = (command: string, editorState: EditorState) => {
+    const newState = RichUtils.handleKeyCommand(editorState, command);
+    if (newState) {
+      setEditorState(newState);
+      return 'handled';
+    }
+    return 'not-handled';
+  };
 
-          {isPreview ? (
-            <div className='space-y-4'>
-              <div className='bg-gray-50 p-4 rounded-lg'>
-                <h3 className='text-xl font-semibold text-gray-900'>{title}</h3>
-                <span className='inline-block mt-2 px-3 py-1 text-sm text-blue-600 bg-blue-50 rounded-full'>{category}</span>
-                <div className='mt-4 prose max-w-none'>
-                  {content.split('\n').map((paragraph, index) => (
-                    <p key={index} className='text-gray-600'>
-                      {paragraph}
-                    </p>
-                  ))}
+  // Toggle inline styles (bold, italic, underline)
+  const toggleInlineStyle = (style: string) => {
+    setEditorState(RichUtils.toggleInlineStyle(editorState, style));
+  };
+
+  // Toggle block types (H1, lists)
+  const toggleBlockType = (type: string) => {
+    setEditorState(RichUtils.toggleBlockType(editorState, type));
+  };
+
+  // Custom function to render preview content
+  const renderPreviewContent = () => {
+    const contentState = editorState.getCurrentContent();
+    return contentState.getPlainText();
+  };
+
+  // Custom style map for the editor
+  const styleMap = {
+    BOLD: { fontWeight: 'bold' },
+    ITALIC: { fontStyle: 'italic' },
+    UNDERLINE: { textDecoration: 'underline' },
+  };
+
+  // Custom block style function
+  const getBlockStyle = (block: Draft.ContentBlock) => {
+    switch (block.getType()) {
+      case 'header-one':
+        return 'text-2xl font-bold my-4';
+      case 'unordered-list-item':
+        return 'list-disc ml-4';
+      default:
+        return '';
+    }
+  };
+
+  return (
+    <div className='fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50'>
+      <div className='max-w-4xl w-full mx-4 bg-white rounded-lg shadow-lg p-6 max-h-[90vh] overflow-y-auto'>
+        {isPreview ? (
+          <div className='space-y-4'>
+            <div className='bg-gray-50 p-4 rounded-lg'>
+              <h3 className='text-xl font-semibold text-gray-900'>{title}</h3>
+              <span className='inline-block mt-2 px-3 py-1 text-sm text-blue-600 bg-blue-50 rounded-full'>{category}</span>
+              <div className='mt-4 prose max-w-none'>{renderPreviewContent()}</div>
+            </div>
+            <div className='flex justify-end gap-4'>
+              <Button type='button' variant='outline' onClick={() => setIsPreview(false)}>
+                Kembali Edit
+              </Button>
+              <Button type='button' variant='outline' onClick={onClose}>
+                Batal
+              </Button>
+              <Button type='button' onClick={handleSubmit}>
+                Terbitkan
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className='space-y-6'>
+            {/* Title Input */}
+            <div>
+              <label htmlFor='title' className='block text-sm font-medium text-gray-700'>
+                Judul
+              </label>
+              <input
+                type='text'
+                id='title'
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className='mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500'
+                required
+              />
+            </div>
+
+            {/* Category Selection */}
+            <div>
+              <label htmlFor='category' className='block text-sm font-medium text-gray-700'>
+                Kategori
+              </label>
+              <select
+                id='category'
+                value={category}
+                onChange={(e) => setCategory(e.target.value as PostCategory)}
+                className='mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500'
+              >
+                {categories.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {cat}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Rich Text Editor */}
+            <div className='border rounded-lg'>
+              {/* Editor Toolbar */}
+              <div className='border-b p-2'>
+                <div className='flex gap-2'>
+                  <button type='button' onClick={() => toggleInlineStyle('BOLD')} className='p-1 hover:bg-gray-200 rounded font-bold'>
+                    B
+                  </button>
+                  <button type='button' onClick={() => toggleInlineStyle('ITALIC')} className='p-1 hover:bg-gray-200 rounded italic'>
+                    I
+                  </button>
+                  <button type='button' onClick={() => toggleInlineStyle('UNDERLINE')} className='p-1 hover:bg-gray-200 rounded underline'>
+                    U
+                  </button>
+                  <button type='button' onClick={() => toggleBlockType('header-one')} className='p-1 hover:bg-gray-200 rounded font-bold'>
+                    H1
+                  </button>
+                  <button type='button' onClick={() => toggleBlockType('unordered-list-item')} className='p-1 hover:bg-gray-200 rounded'>
+                    •
+                  </button>
                 </div>
               </div>
-              <div className='flex justify-end gap-4'>
-                <Button type='button' variant='outline' onClick={() => setIsPreview(false)}>
-                  Kembali Edit
-                </Button>
-                <Button type='button' onClick={handleSubmit}>
-                  Terbitkan
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <form onSubmit={handleSubmit} className='space-y-6'>
-              <div>
-                <label htmlFor='title' className='block text-sm font-medium text-gray-700'>
-                  Judul
-                </label>
-                <input
-                  type='text'
-                  id='title'
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  className='mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 shadow-sm focus:border-blue-500 focus:ring-blue-500'
-                  required
-                  minLength={5}
-                  maxLength={100}
+
+              {/* Editor Content */}
+              <div className='p-3'>
+                <Editor
+                  editorState={editorState}
+                  onChange={setEditorState}
+                  handleKeyCommand={handleKeyCommand}
+                  customStyleMap={styleMap}
+                  blockStyleFn={getBlockStyle}
+                  placeholder='Tulis konten pengumuman di sini...'
                 />
               </div>
+            </div>
 
-              <div>
-                <label htmlFor='category' className='block text-sm font-medium text-gray-700'>
-                  Kategori
-                </label>
-                <select
-                  id='category'
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value as PostCategory)}
-                  className='mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 shadow-sm focus:border-blue-500 focus:ring-blue-500'
-                >
-                  {categories.map((cat) => (
-                    <option key={cat} value={cat}>
-                      {cat}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label htmlFor='content' className='block text-sm font-medium text-gray-700'>
-                  Konten
-                </label>
-                <div className='mt-1 border border-gray-300 rounded-md shadow-sm'>
-                  <div className='bg-gray-50 px-3 py-2 border-b border-gray-300'>
-                    <div className='flex gap-2'>
-                      <button
-                        type='button'
-                        onClick={() => setContent(content + '**Teks Tebal**')}
-                        className='p-1 hover:bg-gray-200 rounded'
-                        title='Teks Tebal'
-                      >
-                        <svg className='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                          <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M13 10V3L4 14h7v7l9-11h-7z' />
-                        </svg>
-                      </button>
-                      {/* Add more formatting buttons as needed */}
-                    </div>
-                  </div>
-                  <textarea
-                    id='content'
-                    value={content}
-                    onChange={(e) => setContent(e.target.value)}
-                    rows={10}
-                    className='block w-full border-0 p-3 text-gray-900 placeholder-gray-400 focus:ring-0'
-                    placeholder='Tulis konten pengumuman di sini...'
-                    required
-                  />
-                </div>
-                <p className='mt-2 text-sm text-gray-500'>Gunakan format teks sederhana untuk menyusun konten.</p>
-              </div>
-
-              <div className='flex justify-end gap-4'>
-                <Button type='button' variant='outline' onClick={onClose}>
-                  Batal
-                </Button>
-                <Button type='button' onClick={() => setIsPreview(true)}>
-                  Preview
-                </Button>
-              </div>
-            </form>
-          )}
-        </div>
+            {/* Form Actions */}
+            <div className='flex justify-end gap-4'>
+              <Button type='button' variant='outline' onClick={() => setIsPreview(true)}>
+                Preview
+              </Button>
+              <Button type='button' variant='outline' onClick={onClose}>
+                Batal
+              </Button>
+              <Button type='submit'>Simpan</Button>
+            </div>
+          </form>
+        )}
       </div>
     </div>
   );
-}
+};
+
+export default CreatePostForm;
