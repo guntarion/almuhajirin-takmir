@@ -23,6 +23,7 @@ const roleAccess: Record<UserRole, string[]> = {
     '/leaderboard',
     '/profil',
     '/home',
+    '/bbs',
     '/kelola-user',
     '/api/users',
   ],
@@ -39,6 +40,7 @@ const roleAccess: Record<UserRole, string[]> = {
     '/leaderboard',
     '/profil',
     '/home',
+    '/bbs',
     '/kelola-user',
     '/api/users',
   ],
@@ -53,6 +55,7 @@ const roleAccess: Record<UserRole, string[]> = {
     '/leaderboard',
     '/profil',
     '/home',
+    '/bbs',
   ],
   koordinator_anakremas: [
     '/koordinator',
@@ -62,10 +65,11 @@ const roleAccess: Record<UserRole, string[]> = {
     '/aktivitas',
     '/leaderboard',
     '/home',
+    '/bbs',
     '/profil',
   ],
-  anakremas: ['/anakremas', '/anakremas/dashboard', '/aktivitas', '/leaderboard', '/home', '/profil'],
-  orangtuawali: ['/orangtua', '/orangtua/dashboard', '/leaderboard', '/home', '/profil'],
+  anakremas: ['/anakremas', '/anakremas/dashboard', '/aktivitas', '/leaderboard', '/home', '/bbs', '/profil'],
+  orangtuawali: ['/orangtua', '/orangtua/dashboard', '/leaderboard', '/home', '/bbs', '/profil'],
 };
 
 // Helper function to check if a path matches any of the allowed routes

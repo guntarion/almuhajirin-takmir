@@ -1,7 +1,7 @@
 // src/components/ui/button.tsx
 import { ReactNode } from 'react';
 
-type ButtonVariant = 'default' | 'destructive' | 'outline' | 'ghost';
+export type ButtonVariant = 'default' | 'destructive' | 'outline' | 'ghost';
 
 interface ButtonProps {
   children: ReactNode;
