@@ -10,6 +10,9 @@ import { useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { convertFromRaw, ContentBlock } from 'draft-js';
 import { stateToHTML } from 'draft-js-export-html';
+import EditPostForm from './EditPostForm';
+
+type PostCategory = 'Pengumuman' | 'Kajian' | 'Kegiatan' | 'Rapat' | 'Lainnya';
 
 interface Post {
   id: string;
@@ -38,6 +41,7 @@ const NEEDS_APPROVAL_ROLES = ['KOORDINATOR_ANAKREMAS', 'ANAK_REMAS'];
 export default function PostDetail({ post, canManagePost }: PostDetailProps) {
   const [isUpdating, setIsUpdating] = useState(false);
   const [currentStatus, setCurrentStatus] = useState(post.status);
+  const [isEditing, setIsEditing] = useState(false);
 
   // Format date to be more readable
   const formattedDate = new Date(post.date).toLocaleDateString('id-ID', {
@@ -208,6 +212,23 @@ export default function PostDetail({ post, canManagePost }: PostDetailProps) {
       <footer className='mt-8 pt-8 border-t border-gray-100'>
         <div className='flex items-center justify-between'>
           <div className='flex items-center gap-4'>
+            {canManagePost && (
+              <button
+                onClick={() => setIsEditing(true)}
+                className='text-gray-500 hover:text-blue-600 transition-colors p-2 rounded-full hover:bg-gray-100'
+                title='Edit'
+                aria-label='Edit pengumuman ini'
+              >
+                <svg className='h-5 w-5' xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
+                  <path
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    strokeWidth={2}
+                    d='M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z'
+                  />
+                </svg>
+              </button>
+            )}
             <button
               onClick={handleShare}
               className='text-gray-500 hover:text-blue-600 transition-colors p-2 rounded-full hover:bg-gray-100'
@@ -235,6 +256,23 @@ export default function PostDetail({ post, canManagePost }: PostDetailProps) {
           </div>
         </div>
       </footer>
+
+      {/* Edit Form Modal */}
+      {isEditing && (
+        <EditPostForm
+          postId={post.id}
+          initialData={{
+            title: post.title,
+            content: post.content,
+            category: post.category as PostCategory,
+          }}
+          onClose={() => setIsEditing(false)}
+          onUpdate={() => {
+            // Refresh the page to show updated content
+            window.location.reload();
+          }}
+        />
+      )}
     </article>
   );
 }
