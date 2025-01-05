@@ -9,9 +9,13 @@ import { Suspense } from 'react';
 import { prisma } from '../../lib/prisma';
 import ClientBBSPage from './client-page';
 import { Post } from '../../lib/types/bbs';
+import { getCurrentUser } from '../../lib/auth';
 
 // Fetch posts from database
 async function getPosts(): Promise<Post[]> {
+  const currentUser = await getCurrentUser();
+  const isAdmin = currentUser?.role && ['TAKMIR', 'ADMIN', 'MARBOT'].includes(currentUser.role);
+
   const posts = await prisma.post.findMany({
     include: {
       author: true,
@@ -21,13 +25,25 @@ async function getPosts(): Promise<Post[]> {
         },
       },
     },
-    orderBy: {
-      createdAt: 'desc',
-    },
-    where: {
-      isApproved: true,
-      status: 'PUBLISHED',
-    },
+    orderBy: [
+      {
+        isPinned: 'desc',
+      },
+      {
+        createdAt: 'desc',
+      },
+    ],
+    where: isAdmin
+      ? {
+          OR: [
+            { status: 'PUBLISHED', isApproved: true },
+            { status: 'DRAFT' }, // Admin can see all drafts
+          ],
+        }
+      : {
+          status: 'PUBLISHED',
+          isApproved: true,
+        },
   });
 
   return posts.map((post) => ({

@@ -6,8 +6,8 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { prisma } from '@/lib/prisma';
-import { authOptions } from '@/lib/auth-config';
+import { prisma } from '../../../../../../lib/prisma';
+import { authOptions } from '../../../../../../lib/auth-config';
 
 // Roles that can manage post status
 const ADMIN_ROLES = ['TAKMIR', 'ADMIN', 'MARBOT'];
@@ -16,15 +16,16 @@ const NEEDS_APPROVAL_ROLES = ['KOORDINATOR_ANAKREMAS', 'ANAK_REMAS'];
 // Roles that can publish directly
 const AUTO_PUBLISH_ROLES = ['TAKMIR', 'ADMIN', 'MARBOT'];
 
-export async function PATCH(request: NextRequest, { params }: { params: { postId: string } }) {
+export async function PATCH(request: NextRequest, context: { params: { postId: string } }) {
   try {
+    const { postId } = await context.params;
     const session = await getServerSession(authOptions);
     if (!session?.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const post = await prisma.post.findUnique({
-      where: { id: params.postId },
+      where: { id: postId },
       include: {
         author: {
           select: {
@@ -60,7 +61,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { postId
       // Auto-publish for authorized roles or admin approval
       if (AUTO_PUBLISH_ROLES.includes(post.author.role) || isAdmin) {
         const updatedPost = await prisma.post.update({
-          where: { id: params.postId },
+          where: { id: postId },
           data: { status: 'PUBLISHED' },
         });
 
@@ -71,7 +72,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { postId
     // For other status changes (e.g., back to draft)
     if (isAdmin || isAuthor) {
       const updatedPost = await prisma.post.update({
-        where: { id: params.postId },
+        where: { id: postId },
         data: { status },
       });
 

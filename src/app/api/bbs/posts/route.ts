@@ -85,7 +85,7 @@ export async function GET(request: Request) {
 }
 
 // Authorized roles that can create posts
-const AUTHORIZED_ROLES = ['TAKMIR', 'ADMIN', 'MARBOT', 'KOORDINATOR_ANAKREMAS'];
+const AUTHORIZED_ROLES = ['TAKMIR', 'ADMIN', 'MARBOT', 'KOORDINATOR_ANAKREMAS', 'ANAK_REMAS'];
 
 // POST /api/bbs/posts - Create new post
 export async function POST(request: Request) {
@@ -126,9 +126,37 @@ export async function POST(request: Request) {
         status: status || 'DRAFT',
         authorId: session.user.id,
       },
+      include: {
+        author: {
+          select: {
+            id: true,
+            name: true,
+            username: true,
+            avatar: true,
+          },
+        },
+        _count: {
+          select: {
+            comments: true,
+          },
+        },
+      },
     });
 
-    return NextResponse.json(post, { status: 201 });
+    // Format the response to match the expected Post type
+    const formattedPost = {
+      ...post,
+      date: post.createdAt.toISOString(),
+      commentCount: post._count.comments,
+      author: {
+        id: post.author.id,
+        name: post.author.name || 'Unknown',
+        username: post.author.username || 'unknown',
+        avatar: post.author.avatar || '/avatars/avatar-01.jpg', // Default avatar
+      },
+    };
+
+    return NextResponse.json(formattedPost, { status: 201 });
   } catch (error) {
     console.error('Failed to create post:', error);
     return NextResponse.json({ error: 'Failed to create post' }, { status: 500 });

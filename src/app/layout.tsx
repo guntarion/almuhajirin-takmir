@@ -3,7 +3,7 @@
 
 import { Geist, Geist_Mono } from 'next/font/google';
 import Providers from '../components/auth/Providers';
-import { Home, UserCog, Users, Activity, Trophy, Menu } from 'lucide-react';
+import { Home, UserCog, Users, Activity, Trophy, Menu, MessageSquare } from 'lucide-react';
 import { LogoutButton } from '../components/auth/LogoutButton';
 import './globals.css';
 import Image from 'next/image';
@@ -64,7 +64,7 @@ export default function RootLayout({
                   <span>Home</span>
                 </Link>
                 <Link href='/bbs' className='flex items-center p-2 rounded-lg hover:bg-gray-700'>
-                  <UserCog className='w-5 h-5 mr-2' />
+                  <MessageSquare className='w-5 h-5 mr-2' />
                   <span>Board</span>
                 </Link>
                 <Link href='/aktivitas' className='flex items-center p-2 rounded-lg hover:bg-gray-700 mt-2'>

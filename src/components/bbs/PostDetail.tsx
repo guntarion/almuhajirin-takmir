@@ -10,6 +10,7 @@ import { useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { convertFromRaw, ContentBlock } from 'draft-js';
 import { stateToHTML } from 'draft-js-export-html';
+import { useRouter } from 'next/navigation';
 import EditPostForm from './EditPostForm';
 
 type PostCategory = 'Pengumuman' | 'Kajian' | 'Kegiatan' | 'Rapat' | 'Lainnya';
@@ -39,9 +40,13 @@ interface PostDetailProps {
 const NEEDS_APPROVAL_ROLES = ['KOORDINATOR_ANAKREMAS', 'ANAK_REMAS'];
 
 export default function PostDetail({ post, canManagePost }: PostDetailProps) {
+  const router = useRouter();
   const [isUpdating, setIsUpdating] = useState(false);
   const [currentStatus, setCurrentStatus] = useState(post.status);
   const [isEditing, setIsEditing] = useState(false);
+  const [isPinning, setIsPinning] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   // Format date to be more readable
   const formattedDate = new Date(post.date).toLocaleDateString('id-ID', {
@@ -76,6 +81,53 @@ export default function PostDetail({ post, canManagePost }: PostDetailProps) {
       toast.error(error instanceof Error ? error.message : 'Failed to update post status');
     } finally {
       setIsUpdating(false);
+    }
+  };
+
+  const handlePinToggle = async () => {
+    if (!canManagePost) return;
+
+    setIsPinning(true);
+    try {
+      const response = await fetch(`/api/bbs/posts/${post.id}/pin`, {
+        method: 'PATCH',
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to update pin status');
+      }
+
+      const updatedPost = await response.json();
+      toast.success(updatedPost.isPinned ? 'Post berhasil dipin' : 'Pin post berhasil dihapus');
+      // Refresh the page to show updated content
+      window.location.reload();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Failed to update pin status');
+    } finally {
+      setIsPinning(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!canManagePost) return;
+
+    setIsDeleting(true);
+    try {
+      const response = await fetch(`/api/bbs/posts/${post.id}/delete`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to delete post');
+      }
+
+      toast.success('Post berhasil dihapus');
+      router.push('/bbs'); // Redirect to BBS page
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Failed to delete post');
+      setIsDeleting(false);
     }
   };
 
@@ -212,6 +264,40 @@ export default function PostDetail({ post, canManagePost }: PostDetailProps) {
       <footer className='mt-8 pt-8 border-t border-gray-100'>
         <div className='flex items-center justify-between'>
           <div className='flex items-center gap-4'>
+            {/* Admin Actions */}
+            {canManagePost && (
+              <>
+                <button
+                  onClick={() => setShowDeleteConfirm(true)}
+                  disabled={isDeleting}
+                  className='text-red-500 hover:text-red-600 transition-colors p-2 rounded-full hover:bg-red-50'
+                  title='Hapus'
+                  aria-label='Hapus pengumuman ini'
+                >
+                  <svg className='h-5 w-5' xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
+                    <path
+                      strokeLinecap='round'
+                      strokeLinejoin='round'
+                      strokeWidth={2}
+                      d='M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16'
+                    />
+                  </svg>
+                </button>
+                <button
+                  onClick={handlePinToggle}
+                  disabled={isPinning}
+                  className={`transition-colors p-2 rounded-full hover:bg-gray-100 ${
+                    post.isPinned ? 'text-blue-500 hover:text-blue-600' : 'text-gray-500 hover:text-gray-600'
+                  }`}
+                  title={post.isPinned ? 'Hapus pin' : 'Pin ke atas'}
+                  aria-label={post.isPinned ? 'Hapus pin dari pengumuman ini' : 'Pin pengumuman ini ke atas'}
+                >
+                  <svg className='h-5 w-5' xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
+                    <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z' />
+                  </svg>
+                </button>
+              </>
+            )}
             {canManagePost && (
               <button
                 onClick={() => setIsEditing(true)}
@@ -244,18 +330,37 @@ export default function PostDetail({ post, canManagePost }: PostDetailProps) {
                 />
               </svg>
             </button>
-            <button
-              className='text-gray-500 hover:text-blue-600 transition-colors p-2 rounded-full hover:bg-gray-100'
-              title='Simpan'
-              aria-label='Simpan pengumuman ini'
-            >
-              <svg className='h-5 w-5' xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='currentColor' aria-hidden='true'>
-                <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z' />
-              </svg>
-            </button>
           </div>
         </div>
       </footer>
+
+      {/* Delete Confirmation Dialog */}
+      {showDeleteConfirm && (
+        <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50'>
+          <div className='bg-white rounded-lg p-6 max-w-sm w-full'>
+            <h3 className='text-lg font-medium text-gray-900 mb-4'>Konfirmasi Hapus</h3>
+            <p className='text-sm text-gray-500 mb-6'>Apakah Anda yakin ingin menghapus pengumuman ini? Tindakan ini tidak dapat dibatalkan.</p>
+            <div className='flex justify-end gap-4'>
+              <button
+                onClick={() => setShowDeleteConfirm(false)}
+                className='px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500'
+              >
+                Batal
+              </button>
+              <button
+                onClick={() => {
+                  setShowDeleteConfirm(false);
+                  handleDelete();
+                }}
+                disabled={isDeleting}
+                className='px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50'
+              >
+                {isDeleting ? 'Menghapus...' : 'Hapus'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Edit Form Modal */}
       {isEditing && (

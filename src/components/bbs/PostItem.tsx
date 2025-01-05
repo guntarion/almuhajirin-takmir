@@ -21,9 +21,10 @@ interface PostItemProps {
   viewCount: number;
   isPinned?: boolean;
   id: string;
+  status: 'DRAFT' | 'PUBLISHED';
 }
 
-export default function PostItem({ title, excerpt, author, date, category, commentCount, viewCount, isPinned = false, id }: PostItemProps) {
+export default function PostItem({ title, excerpt, author, date, category, commentCount, viewCount, isPinned = false, id, status }: PostItemProps) {
   // Format date to be more readable
   const formattedDate = new Date(date).toLocaleDateString('id-ID', {
     year: 'numeric',
@@ -33,10 +34,14 @@ export default function PostItem({ title, excerpt, author, date, category, comme
 
   return (
     <Link href={`/bbs/${id}`} className='block' aria-label={`Baca pengumuman: ${title}`}>
-      <div className='bg-white p-6 rounded-lg shadow-sm border border-gray-100 hover:shadow-md transition-shadow'>
+      <div
+        className={`bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow ${
+          status === 'DRAFT' ? 'border-2 border-red-200' : 'border-2 border-blue-100'
+        }`}
+      >
         <div className='flex items-start justify-between'>
           <div className='space-y-2'>
-            <div className='flex items-center gap-2'>
+            <div className='flex items-center gap-2 flex-wrap'>
               {isPinned && (
                 <svg
                   className='h-4 w-4 text-blue-500'
@@ -49,6 +54,7 @@ export default function PostItem({ title, excerpt, author, date, category, comme
                   <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z' />
                 </svg>
               )}
+              {status === 'DRAFT' && <span className='bg-red-100 text-red-800 text-xs px-2.5 py-0.5 rounded-full font-medium'>Draft</span>}
               <h3 className='text-lg font-semibold text-gray-900'>
                 {isPinned && <span className='sr-only'>Dipin: </span>}
                 {title}

@@ -15,7 +15,7 @@ import { Button } from '@/components/ui/button';
 import { Post, PostCreateInput } from '@/lib/types/bbs';
 
 // Roles authorized to create posts
-const AUTHORIZED_ROLES = ['TAKMIR', 'ADMIN', 'MARBOT', 'KOORDINATOR_ANAKREMAS'];
+const AUTHORIZED_ROLES = ['TAKMIR', 'ADMIN', 'MARBOT', 'KOORDINATOR_ANAKREMAS', 'ANAK_REMAS'];
 
 interface ClientBBSPageProps {
   initialPosts: Post[];

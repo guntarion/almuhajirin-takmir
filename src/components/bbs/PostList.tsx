@@ -98,6 +98,7 @@ export default function PostList({ posts: initialPosts }: PostListProps) {
                 commentCount={post.commentCount}
                 viewCount={post.viewCount}
                 isPinned={post.isPinned}
+                status={post.status as 'DRAFT' | 'PUBLISHED'}
               />
             </div>
           ))}
