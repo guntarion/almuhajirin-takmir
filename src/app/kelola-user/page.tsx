@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { UserRole } from '@prisma/client';
+import { UserRole } from '../../lib/types/auth';
 import { UserForm, userFormSchema } from '../../components/kelola-user/user-form';
 import { useRouter } from 'next/navigation';
 import type { z } from 'zod';
@@ -30,7 +30,7 @@ type FormRole = z.infer<typeof userFormSchema>['role'];
 type UserFormData = z.infer<typeof userFormSchema>;
 
 const isAllowedRole = (role: UserRole): role is FormRole => {
-  return ['anakremas', 'orangtuawali', 'marbot', 'takmir'].includes(role);
+  return [UserRole.ANAK_REMAS, UserRole.ORANG_TUA, UserRole.ADMIN].includes(role);
 };
 
 export default function KelolaUserPage() {
@@ -216,10 +216,9 @@ export default function KelolaUserPage() {
         />
         <select value={selectedRole} onChange={(e) => setSelectedRole(e.target.value as UserRole | '')} className='px-3 py-2 border rounded-md'>
           <option value=''>All Roles</option>
-          <option value='anakremas'>Anak Remas</option>
-          <option value='orangtuawali'>Orang Tua Wali</option>
-          <option value='marbot'>Marbot</option>
-          <option value='takmir'>Takmir</option>
+          <option value={UserRole.ANAK_REMAS}>Anak Remas</option>
+          <option value={UserRole.ORANG_TUA}>Orang Tua</option>
+          <option value={UserRole.ADMIN}>Admin</option>
         </select>
       </div>
 

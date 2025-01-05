@@ -1,7 +1,7 @@
 // src/lib/utils/auth.ts
 
 import { getServerSession } from 'next-auth';
-import { authOptions } from '../auth';
+import { authOptions } from '../auth-config';
 import { UserRole, type AuthSession } from '../types/auth';
 import { redirect } from 'next/navigation';
 
@@ -15,12 +15,9 @@ export async function getCurrentUser() {
 }
 
 export const ROLES_HIERARCHY = {
-  admin: ['admin', 'takmir', 'marbot', 'orangtuawali', 'koordinator_anakremas', 'anakremas'],
-  takmir: ['takmir', 'marbot', 'orangtuawali', 'koordinator_anakremas', 'anakremas'],
-  marbot: ['marbot', 'orangtuawali', 'koordinator_anakremas', 'anakremas'],
-  orangtuawali: ['orangtuawali'],
-  koordinator_anakremas: ['koordinator_anakremas', 'anakremas'],
-  anakremas: ['anakremas'],
+  ADMIN: ['ADMIN'],
+  ORANG_TUA: ['ORANG_TUA'],
+  ANAK_REMAS: ['ANAK_REMAS'],
 };
 
 export function canAccess(userRole: UserRole, requiredRole: UserRole): boolean {
@@ -39,12 +36,9 @@ export function checkAccess(session: AuthSession | null, requiredRole: UserRole)
 }
 
 export const DEFAULT_REDIRECT_PATH: Record<UserRole, string> = {
-  admin: '/admin/home',
-  takmir: '/takmir/home',
-  marbot: '/marbot/home',
-  orangtuawali: '/orangtua/home',
-  koordinator_anakremas: '/koordinator/home',
-  anakremas: '/home',
+  ADMIN: '/admin/home',
+  ORANG_TUA: '/orangtua/home',
+  ANAK_REMAS: '/home',
 };
 
 export function getRedirectPath(role: UserRole): string {

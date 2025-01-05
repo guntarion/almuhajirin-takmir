@@ -5,9 +5,10 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { prisma } from '@/lib/prisma';
+import { prisma } from '../../../../lib/prisma';
+
 import { z } from 'zod';
-import { authOptions } from '@/lib/auth';
+import { authOptions } from '../../../../lib/auth-config';
 
 // Validation schema for profile updates
 const profileUpdateSchema = z.object({

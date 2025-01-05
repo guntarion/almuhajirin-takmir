@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import { UserRole } from '../../lib/types/auth';
 
 // Form validation schema
 export const userFormSchema = z
@@ -13,12 +14,12 @@ export const userFormSchema = z
     username: z.string().min(3, 'Username must be at least 3 characters'),
     email: z.string().email('Invalid email address'),
     password: z.string().min(6, 'Password must be at least 6 characters').optional(),
-    role: z.enum(['anakremas', 'orangtuawali', 'marbot', 'takmir']),
+    role: z.nativeEnum(UserRole),
     anakremasId: z.string().optional(),
   })
   .refine(
     (data) => {
-      if (data.role === 'orangtuawali') {
+      if (data.role === UserRole.ORANG_TUA) {
         return !!data.anakremasId;
       }
       return true;
@@ -56,10 +57,10 @@ export function UserForm({ initialData, onSubmit, isEditing = false }: UserFormP
 
   // Fetch anak remas list for orangtuawali role
   useEffect(() => {
-    if (selectedRole === 'orangtuawali') {
+    if (selectedRole === UserRole.ORANG_TUA) {
       const fetchAnakRemas = async () => {
         try {
-          const response = await fetch('/api/users?role=anakremas');
+          const response = await fetch(`/api/users?role=${UserRole.ANAK_REMAS}`);
           if (!response.ok) {
             if (response.status === 401) {
               window.location.href = '/auth/login?callbackUrl=' + encodeURIComponent(window.location.pathname);
@@ -154,15 +155,14 @@ export function UserForm({ initialData, onSubmit, isEditing = false }: UserFormP
           </label>
           <select {...register('role')} className='mt-1 block w-full rounded-md border border-gray-300 px-3 py-2'>
             <option value=''>Select a role</option>
-            <option value='anakremas'>Anak Remas</option>
-            <option value='orangtuawali'>Orang Tua Wali</option>
-            <option value='marbot'>Marbot</option>
-            <option value='takmir'>Takmir</option>
+            <option value={UserRole.ANAK_REMAS}>Anak Remas</option>
+            <option value={UserRole.ORANG_TUA}>Orang Tua</option>
+            <option value={UserRole.ADMIN}>Admin</option>
           </select>
           {errors.role && <p className='mt-1 text-sm text-red-500'>{errors.role.message}</p>}
         </div>
 
-        {selectedRole === 'orangtuawali' && (
+        {selectedRole === UserRole.ORANG_TUA && (
           <div>
             <label htmlFor='anakremasId' className='block text-sm font-medium text-gray-700'>
               Associated Anak Remas

@@ -1,12 +1,14 @@
 // src/app/api/users/route.ts
 import { NextResponse } from 'next/server';
-import { UserRole, Prisma } from '@prisma/client';
+import { Prisma } from '@prisma/client';
+
 import { prisma } from '../../../lib/prisma';
-import { getAuthSession } from '../../../lib/auth';
+import { getSession } from '../../../lib/utils/auth';
+import { UserRole } from '../../../lib/types/auth';
 
 async function checkAdminAccess() {
-  const session = await getAuthSession();
-  if (!session?.user || !['admin', 'takmir'].includes(session.user.role)) {
+  const session = await getSession();
+  if (!session?.user || session.user.role !== UserRole.ADMIN) {
     return false;
   }
   return true;
@@ -27,11 +29,7 @@ export async function GET(request: Request) {
     const where: Prisma.UserWhereInput = {
       ...(role && { role }),
       ...(search && {
-        OR: [
-          { name: { contains: search, mode: 'insensitive' } },
-          { username: { contains: search, mode: 'insensitive' } },
-          { email: { contains: search, mode: 'insensitive' } },
-        ],
+        OR: [{ name: { contains: search } }, { username: { contains: search } }, { email: { contains: search } }],
       }),
     };
 
@@ -84,9 +82,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    // Validate orangtuawali role requirements
-    if (body.role === 'orangtuawali' && !body.anakremasId) {
-      return NextResponse.json({ error: 'Anak Remas ID is required for Orang Tua Wali role' }, { status: 400 });
+    // Validate ORANG_TUA role requirements
+    if (body.role === UserRole.ORANG_TUA && !body.anakremasId) {
+      return NextResponse.json({ error: 'Anak Remas ID is required for Orang Tua role' }, { status: 400 });
     }
 
     // Check if username is already taken
@@ -105,12 +103,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Email is already registered' }, { status: 400 });
     }
 
-    // If orangtuawali, verify that the anakremas exists
-    if (body.role === 'orangtuawali') {
+    // If ORANG_TUA, verify that the anakremas exists
+    if (body.role === UserRole.ORANG_TUA) {
       const anakremas = await prisma.user.findFirst({
         where: {
           id: body.anakremasId,
-          role: 'anakremas',
+          role: UserRole.ANAK_REMAS,
         },
       });
       if (!anakremas) {
@@ -125,7 +123,7 @@ export async function POST(request: Request) {
         email: body.email,
         password: body.password, // Note: In production, ensure password is hashed
         role: body.role,
-        ...(body.role === 'orangtuawali' && { groupId: body.anakremasId }),
+        ...(body.role === UserRole.ORANG_TUA && { groupId: body.anakremasId }),
       },
       select: {
         id: true,
@@ -199,12 +197,12 @@ export async function PUT(request: Request) {
       }
     }
 
-    // If changing to orangtuawali or updating anakremasId, verify the anakremas exists
-    if (body.role === 'orangtuawali' || (currentUser.role === 'orangtuawali' && body.anakremasId)) {
+    // If changing to ORANG_TUA or updating anakremasId, verify the anakremas exists
+    if (body.role === UserRole.ORANG_TUA || (currentUser.role === UserRole.ORANG_TUA && body.anakremasId)) {
       const anakremas = await prisma.user.findFirst({
         where: {
           id: body.anakremasId,
-          role: 'anakremas',
+          role: UserRole.ANAK_REMAS,
         },
       });
       if (!anakremas) {
@@ -219,9 +217,9 @@ export async function PUT(request: Request) {
         ...(body.username && { username: body.username }),
         ...(body.email && { email: body.email }),
         ...(body.role && { role: body.role }),
-        ...(body.role === 'orangtuawali' && { groupId: body.anakremasId }),
-        // If role is changed from orangtuawali to something else, remove the groupId
-        ...(body.role && body.role !== 'orangtuawali' && { groupId: null }),
+        ...(body.role === UserRole.ORANG_TUA && { groupId: body.anakremasId }),
+        // If role is changed from ORANG_TUA to something else, remove the groupId
+        ...(body.role && body.role !== UserRole.ORANG_TUA && { groupId: null }),
       },
       select: {
         id: true,

@@ -1,57 +1,85 @@
 // prisma/seed.ts
-import { PrismaClient, UserRole } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
-const { hash } = bcrypt;
-
 const prisma = new PrismaClient();
 
+const hashPassword = async (password: string) => {
+  const salt = await bcrypt.genSalt(10);
+  return await bcrypt.hash(password, salt);
+};
+
 async function main() {
-  // Create roles
-  const roles = [UserRole.ANAK_REMAS, UserRole.KOORDINATOR_ANAK_REMAS, UserRole.ORANG_TUA_WALI, UserRole.MARBOT, UserRole.TAKMIR, UserRole.ADMIN];
+  // Clear existing data in correct order to respect foreign key constraints
+  await prisma.comment.deleteMany({});
+  await prisma.post.deleteMany({});
+  await prisma.user.deleteMany({});
 
-  for (const role of roles) {
-    await prisma.user.upsert({
-      where: { username: role },
-      update: {},
-      create: {
-        name: role.toUpperCase(),
-        username: role,
-        email: `${role}@example.com`,
-        password: await hash('password123', 12),
-        role: role,
-        active: true,
-      },
-    });
-  }
+  // Create users with unique emails
+  const user1 = await prisma.user.create({
+    data: {
+      name: 'Admin User',
+      username: 'admin',
+      email: 'admin@example.com',
+      password: await hashPassword('password123'),
+      role: 'ADMIN',
+      avatar: '/avatars/avatar-01.jpg',
+    },
+  });
 
-  // Create sample posts
-  const admin = await prisma.user.findUnique({ where: { username: 'admin' } });
+  const user2 = await prisma.user.create({
+    data: {
+      name: 'Regular User',
+      username: 'user',
+      email: 'user@example.com',
+      password: await hashPassword('password123'),
+      role: 'ANAK_REMAS',
+      avatar: '/avatars/avatar-02.jpg',
+    },
+  });
 
-  if (admin) {
-    await prisma.post.createMany({
-      data: [
-        {
-          title: 'Selamat Datang di BBS Remas',
-          content: 'Ini adalah posting pertama di BBS Remas',
-          category: 'PENGUMUMAN',
-          tags: ['pengumuman', 'remas'],
-          status: 'PUBLISHED',
-          isPinned: true,
-          authorId: admin.id,
-        },
-        {
-          title: 'Jadwal Kajian Rutin',
-          content: 'Berikut jadwal kajian rutin bulan ini',
-          category: 'KAJIAN',
-          tags: ['kajian', 'jadwal'],
-          status: 'PUBLISHED',
-          authorId: admin.id,
-        },
-      ],
-    });
-  }
+  // Create posts
+  const post1 = await prisma.post.create({
+    data: {
+      title: 'First Post',
+      content: 'This is the first post content',
+      category: 'PENGUMUMAN',
+      tags: '["announcement", "general"]',
+      status: 'PUBLISHED',
+      authorId: user1.id,
+    },
+  });
 
-  console.log('Database seeded successfully!');
+  const post2 = await prisma.post.create({
+    data: {
+      title: 'Second Post',
+      content: 'This is the second post content',
+      category: 'INFORMASI',
+      tags: '["info", "update"]',
+      status: 'PUBLISHED',
+      authorId: user2.id,
+    },
+  });
+
+  // Create comments
+  await prisma.comment.create({
+    data: {
+      content: 'Great post!',
+      postId: post1.id,
+      authorId: user2.id,
+      status: 'APPROVED',
+    },
+  });
+
+  await prisma.comment.create({
+    data: {
+      content: 'Thanks for sharing!',
+      postId: post2.id,
+      authorId: user1.id,
+      status: 'APPROVED',
+    },
+  });
+
+  console.log('Seed data created successfully');
 }
 
 main()

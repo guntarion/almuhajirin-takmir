@@ -3,7 +3,7 @@
 
 import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient();
+export const prisma = new PrismaClient();
 
 // Get posts with pagination and filters
 export async function getPosts(params: {

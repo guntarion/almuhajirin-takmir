@@ -4,9 +4,12 @@ import { withAuth } from 'next-auth/middleware';
 import { NextResponse } from 'next/server';
 import { UserRole } from './lib/types/auth';
 
+// Create a type-safe array of UserRole values
+const userRoles = Object.values(UserRole) as UserRole[];
+
 // Define role-based route access with dashboard routes
 const roleAccess: Record<UserRole, string[]> = {
-  admin: [
+  ADMIN: [
     '/admin',
     '/admin/dashboard',
     '/takmir',
@@ -27,49 +30,8 @@ const roleAccess: Record<UserRole, string[]> = {
     '/kelola-user',
     '/api/users',
   ],
-  takmir: [
-    '/takmir',
-    '/takmir/dashboard',
-    '/marbot',
-    '/marbot/dashboard',
-    '/koordinator',
-    '/koordinator/dashboard',
-    '/anakremas',
-    '/anakremas/dashboard',
-    '/aktivitas',
-    '/leaderboard',
-    '/profil',
-    '/home',
-    '/bbs',
-    '/kelola-user',
-    '/api/users',
-  ],
-  marbot: [
-    '/marbot',
-    '/marbot/dashboard',
-    '/koordinator',
-    '/koordinator/dashboard',
-    '/anakremas',
-    '/anakremas/dashboard',
-    '/aktivitas',
-    '/leaderboard',
-    '/profil',
-    '/home',
-    '/bbs',
-  ],
-  koordinator_anakremas: [
-    '/koordinator',
-    '/koordinator/dashboard',
-    '/anakremas',
-    '/anakremas/dashboard',
-    '/aktivitas',
-    '/leaderboard',
-    '/home',
-    '/bbs',
-    '/profil',
-  ],
-  anakremas: ['/anakremas', '/anakremas/dashboard', '/aktivitas', '/leaderboard', '/home', '/bbs', '/profil'],
-  orangtuawali: ['/orangtua', '/orangtua/dashboard', '/leaderboard', '/home', '/bbs', '/profil'],
+  ORANG_TUA: ['/orangtua', '/orangtua/dashboard', '/leaderboard', '/home', '/bbs', '/profil'],
+  ANAK_REMAS: ['/anakremas', '/anakremas/dashboard', '/aktivitas', '/leaderboard', '/home', '/bbs', '/profil'],
 };
 
 // Helper function to check if a path matches any of the allowed routes
@@ -100,21 +62,38 @@ export default withAuth(
   {
     callbacks: {
       authorized: ({ token, req }) => {
-        if (!token) return false;
+        if (!token) {
+          console.log('Middleware - No token found');
+          return false;
+        }
 
         const path = req.nextUrl.pathname;
         const userRole = token.role as UserRole;
 
+        // console.log('Middleware - Full Token:', token);
+        // console.log('Middleware - User Role:', userRole);
+        // console.log('Middleware - Requested Path:', path);
+
+        // If role is not defined, redirect to login
+        if (!userRole) {
+          console.log('Middleware - Role not found in token');
+          return false;
+        }
+
         // If role is not valid, deny access
-        if (!Object.values(UserRole).includes(userRole)) {
+        if (!userRoles.includes(userRole)) {
+          console.log('Middleware - Invalid role:', userRole);
           return false;
         }
 
         // Get allowed routes for user role
         const allowedRoutes = roleAccess[userRole];
+        // console.log('Middleware - Allowed Routes:', allowedRoutes);
 
         // Check if user has access to the requested path
-        return isPathAllowed(path, allowedRoutes);
+        const isAllowed = isPathAllowed(path, allowedRoutes);
+        // console.log('Middleware - Access Granted:', isAllowed);
+        return isAllowed;
       },
     },
     pages: {
@@ -142,6 +121,7 @@ export const config = {
     '/leaderboard/:path*',
     '/profil/:path*',
     '/home/:path*',
+    '/kelola-user',
     '/kelola-user/:path*',
     '/api/users/:path*',
   ],

@@ -1,57 +1,10 @@
-// prisma/schema.prisma
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-}
-
-enum UserRole {
-  ANAK_REMAS
-  KOORDINATOR_ANAK_REMAS  
-  ORANG_TUA_WALI
-  MARBOT
-  TAKMIR
-  ADMIN
-}
-
-
-enum PostStatus {
-  DRAFT
-  PUBLISHED
-  ARCHIVED
-}
-
-enum PostCategory {
-  PENGUMUMAN
-  KAJIAN
-  KEGIATAN
-  RAPAT
-  LAINNYA
-}
-
-enum CommentStatus {
-  PENDING
-  APPROVED
-  REJECTED
-}
-
-enum ReactionType {
-  LIKE
-  LOVE
-  HAHA
-  WOW
-  SAD
-  ANGRY
-}
-
-enum NotificationType {
-  COMMENT
-  REACTION
-  BOOKMARK
+  provider = "sqlite"
+  url      = "file:./../data/databasemuhajirin.db"
 }
 
 model Post {
@@ -59,9 +12,9 @@ model Post {
   title       String
   content     String
   excerpt     String?
-  category    PostCategory
-  tags        String[]
-  status      PostStatus  @default(DRAFT)
+  category    String      @default("PENGUMUMAN")
+  tags        String      @default("[]")
+  status      String      @default("DRAFT")
   isPinned    Boolean     @default(false)
   isApproved  Boolean     @default(true)
   viewCount   Int         @default(0)
@@ -94,7 +47,7 @@ model Comment {
   parentId    String?
   parent      Comment?    @relation("CommentReplies", fields: [parentId], references: [id])
   replies     Comment[]   @relation("CommentReplies")
-  status      CommentStatus @default(PENDING)
+  status      String      @default("PENDING")
   notifications Notification[]
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
@@ -106,7 +59,7 @@ model Comment {
 
 model PostReaction {
   id          String      @id @default(cuid())
-  type        ReactionType
+  type        String      @default("LIKE")
   user        User        @relation(fields: [userId], references: [id])
   userId      String
   post        Post        @relation(fields: [postId], references: [id])
@@ -131,7 +84,7 @@ model Bookmark {
 
 model Notification {
   id          String      @id @default(cuid())
-  type        NotificationType
+  type        String      @default("COMMENT")
   user        User        @relation(fields: [userId], references: [id])
   userId      String
   post        Post?       @relation(fields: [postId], references: [id])
@@ -150,7 +103,7 @@ model User {
   username      String    @unique
   email         String    @unique
   password      String
-  role          UserRole @default(ANAK_REMAS)
+  role          String    @default("ANAK_REMAS")
   active        Boolean   @default(true)
   groupId       String?
   avatar        String?   @default("/avatars/avatar-01.jpg")
