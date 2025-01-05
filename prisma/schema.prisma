@@ -10,12 +10,138 @@ datasource db {
 }
 
 enum UserRole {
-  anakremas
-  koordinator_anakremas
-  orangtuawali
-  marbot
-  takmir
-  admin
+  ANAK_REMAS
+  KOORDINATOR_ANAK_REMAS  
+  ORANG_TUA_WALI
+  MARBOT
+  TAKMIR
+  ADMIN
+}
+
+
+enum PostStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum PostCategory {
+  PENGUMUMAN
+  KAJIAN
+  KEGIATAN
+  RAPAT
+  LAINNYA
+}
+
+enum CommentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum ReactionType {
+  LIKE
+  LOVE
+  HAHA
+  WOW
+  SAD
+  ANGRY
+}
+
+enum NotificationType {
+  COMMENT
+  REACTION
+  BOOKMARK
+}
+
+model Post {
+  id          String      @id @default(cuid())
+  title       String
+  content     String
+  excerpt     String?
+  category    PostCategory
+  tags        String[]
+  status      PostStatus  @default(DRAFT)
+  isPinned    Boolean     @default(false)
+  isApproved  Boolean     @default(true)
+  viewCount   Int         @default(0)
+  authorId    String
+  author      User        @relation(fields: [authorId], references: [id])
+  comments    Comment[]
+  reactions   PostReaction[]
+  bookmarks   Bookmark[]
+  notifications Notification[]
+  postViews   PostView[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@index([category])
+  @@index([status])
+  @@index([isPinned])
+  @@index([createdAt])
+  @@index([authorId])
+  @@index([isApproved])
+  @@map("posts")
+}
+
+model Comment {
+  id          String      @id @default(cuid())
+  content     String
+  postId      String
+  post        Post        @relation(fields: [postId], references: [id])
+  authorId    String
+  author      User        @relation(fields: [authorId], references: [id])
+  parentId    String?
+  parent      Comment?    @relation("CommentReplies", fields: [parentId], references: [id])
+  replies     Comment[]   @relation("CommentReplies")
+  status      CommentStatus @default(PENDING)
+  notifications Notification[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@index([postId])
+  @@index([parentId])
+  @@map("comments")
+}
+
+model PostReaction {
+  id          String      @id @default(cuid())
+  type        ReactionType
+  user        User        @relation(fields: [userId], references: [id])
+  userId      String
+  post        Post        @relation(fields: [postId], references: [id])
+  postId      String
+  createdAt   DateTime    @default(now())
+
+  @@unique([userId, postId])
+  @@map("post_reactions")
+}
+
+model Bookmark {
+  id          String      @id @default(cuid())
+  user        User        @relation(fields: [userId], references: [id])
+  userId      String
+  post        Post        @relation(fields: [postId], references: [id])
+  postId      String
+  createdAt   DateTime    @default(now())
+
+  @@unique([userId, postId])
+  @@map("bookmarks")
+}
+
+model Notification {
+  id          String      @id @default(cuid())
+  type        NotificationType
+  user        User        @relation(fields: [userId], references: [id])
+  userId      String
+  post        Post?       @relation(fields: [postId], references: [id])
+  postId      String?
+  comment     Comment?    @relation(fields: [commentId], references: [id])
+  commentId   String?
+  isRead      Boolean     @default(false)
+  createdAt   DateTime    @default(now())
+
+  @@map("notifications")
 }
 
 model User {
@@ -24,10 +150,9 @@ model User {
   username      String    @unique
   email         String    @unique
   password      String
-  role          UserRole
+  role          UserRole @default(ANAK_REMAS)
   active        Boolean   @default(true)
   groupId       String?
-  // New fields for profile
   avatar        String?   @default("/avatars/avatar-01.jpg")
   tanggalLahir  DateTime?
   nomerWhatsapp String?
@@ -36,10 +161,14 @@ model User {
   rtRumah       String?
   sekolah       String?
   keterangan    String?
-  // Timestamps
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
-
+  posts         Post[]
+  comments      Comment[]
+  postReactions PostReaction[]
+  bookmarks     Bookmark[]
+  notifications Notification[]
+  postViews     PostView[]
   orangTuaAnakRemasAsOrangTua    OrangTuaAnakRemas[] @relation("orangTua")
   orangTuaAnakRemasAsAnakRemas   OrangTuaAnakRemas[] @relation("anakRemas")
 
@@ -57,4 +186,19 @@ model OrangTuaAnakRemas {
 
   @@unique([orangTuaId, anakRemasId])
   @@map("orang_tua_anak_remas")
+}
+
+model PostView {
+  id        String   @id @default(cuid())
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id])
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+  ipAddress String
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  @@index([postId])
+  @@index([userId])
+  @@map("post_views")
 }

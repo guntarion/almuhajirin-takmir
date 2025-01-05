@@ -11,7 +11,7 @@ export interface Post {
   excerpt: string;
   author: string;
   date: string;
-  category: string;
+  category: PostCategory;
   commentCount: number;
   viewCount: number;
   isPinned: boolean;

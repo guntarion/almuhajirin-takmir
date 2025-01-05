@@ -8,7 +8,7 @@
 
 import { useState } from 'react';
 import { Button } from '../ui/button';
-import { CreatePostData, PostCategory } from '@/lib/types/bbs';
+import { CreatePostData, PostCategory } from '../../lib/types/bbs';
 
 interface CreatePostFormProps {
   onClose: () => void;

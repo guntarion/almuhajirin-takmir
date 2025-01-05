@@ -7,10 +7,10 @@ import PostDetail from '../../../components/bbs/PostDetail';
 import CommentList from '../../../components/bbs/CommentList';
 import CommentForm from '../../../components/bbs/CommentForm';
 
-export default function PostPage({ params }: { params: { postId: string } }) {
+export default async function PostPage({ params }: { params: { postId: string } }) {
   // Sample post data - this would typically come from an API/database
   const post = {
-    id: params.postId,
+    id: await params.postId,
     title: 'Jadwal Kajian Rutin Bulan Ramadhan',
     content: `
       <p>Assalamu'alaikum Warahmatullahi Wabarakatuh</p>
