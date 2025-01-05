@@ -1,44 +1,47 @@
 // src/app/api/bbs/posts/route.ts
 import { NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
-import prisma from '@/lib/prisma';
-import { PostStatus, PostCategory } from '@prisma/client';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '../../../../lib/auth-config';
+import { prisma } from '../../../../lib/prisma';
+import { Prisma } from '@prisma/client';
 
 // GET /api/bbs/posts - Get all posts
 export async function GET(request: Request) {
-  const session = await auth();
+  const session = await getServerSession(authOptions);
   if (!session) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   const { searchParams } = new URL(request.url);
-  const category = searchParams.get('category') as PostCategory | null;
-  const status = searchParams.get('status') as PostStatus | null;
+  const category = searchParams.get('category') || undefined;
+  const status = searchParams.get('status') || undefined;
   const search = searchParams.get('search') || '';
   const page = parseInt(searchParams.get('page') || '1');
   const limit = parseInt(searchParams.get('limit') || '10');
   const sort = searchParams.get('sort') || 'newest';
 
-  const where = {
-    AND: [
-      { status: status || undefined },
-      { category: category || undefined },
-      {
-        OR: [
-          { title: { contains: search, mode: 'insensitive' } },
-          { content: { contains: search, mode: 'insensitive' } },
-          { tags: { hasSome: [search] } },
-        ],
-      },
-    ],
+  const where: Prisma.PostWhereInput = {
+    ...(status && { status }),
+    ...(category && { category }),
+    ...(search && {
+      OR: [{ title: { contains: search } }, { content: { contains: search } }, { tags: { contains: search } }],
+    }),
   };
 
-  const orderBy = {
-    newest: { createdAt: 'desc' },
-    oldest: { createdAt: 'asc' },
-    most_views: { viewCount: 'desc' },
-    most_comments: { comments: { _count: 'desc' } },
-  }[sort];
+  const orderBy: Prisma.PostOrderByWithRelationInput = (() => {
+    switch (sort) {
+      case 'newest':
+        return { createdAt: 'desc' };
+      case 'oldest':
+        return { createdAt: 'asc' };
+      case 'most_views':
+        return { viewCount: 'desc' };
+      case 'most_comments':
+        return { comments: { _count: 'desc' } };
+      default:
+        return { createdAt: 'desc' };
+    }
+  })();
 
   try {
     const [posts, total] = await Promise.all([
@@ -76,27 +79,36 @@ export async function GET(request: Request) {
       },
     });
   } catch (error) {
+    console.error('Failed to fetch posts:', error);
     return NextResponse.json({ error: 'Failed to fetch posts' }, { status: 500 });
   }
 }
 
+// Authorized roles that can create posts
+const AUTHORIZED_ROLES = ['TAKMIR', 'ADMIN', 'MARBOT', 'KOORDINATOR_ANAKREMAS'];
+
 // POST /api/bbs/posts - Create new post
 export async function POST(request: Request) {
-  const session = await auth();
+  const session = await getServerSession(authOptions);
   if (!session?.user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const { title, content, category, tags, status } = await request.json();
+  // Check if user has permission to create posts
+  if (!AUTHORIZED_ROLES.includes(session.user.role)) {
+    return NextResponse.json({ error: 'Forbidden: Insufficient permissions to create posts' }, { status: 403 });
+  }
 
   try {
+    const { title, content, category, tags, status } = await request.json();
+
     const post = await prisma.post.create({
       data: {
         title,
         content,
         excerpt: content.slice(0, 200),
         category,
-        tags: tags || [],
+        tags: JSON.stringify(tags || []),
         status: status || 'DRAFT',
         authorId: session.user.id,
       },
@@ -104,6 +116,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json(post, { status: 201 });
   } catch (error) {
+    console.error('Failed to create post:', error);
     return NextResponse.json({ error: 'Failed to create post' }, { status: 500 });
   }
 }

@@ -119,64 +119,102 @@ const CreatePostForm: React.FC<CreatePostFormProps> = ({ onSubmit, onClose }) =>
         ) : (
           <form onSubmit={handleSubmit} className='space-y-6'>
             {/* Title Input */}
-            <div>
-              <label htmlFor='title' className='block text-sm font-medium text-gray-700'>
-                Judul
-              </label>
-              <input
-                type='text'
-                id='title'
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                className='mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500'
-                required
-              />
-            </div>
+            <input
+              type='text'
+              id='title'
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder='Masukkan Judul' // Added this line
+              className='mt-1 block w-full px-3 py-2 text-sm
+    border-2 border-gray-300 
+    rounded-md 
+    shadow-sm
+    focus:outline-none 
+    focus:border-blue-500 
+    focus:ring-2 
+    focus:ring-blue-500 
+    focus:ring-opacity-50
+    placeholder:text-gray-400'
+              required
+            />
 
             {/* Category Selection */}
-            <div>
-              <label htmlFor='category' className='block text-sm font-medium text-gray-700'>
-                Kategori
-              </label>
-              <select
-                id='category'
-                value={category}
-                onChange={(e) => setCategory(e.target.value as PostCategory)}
-                className='mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500'
-              >
-                {categories.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <select
+              id='category'
+              value={category}
+              onChange={(e) => setCategory(e.target.value as PostCategory)}
+              className='mt-1 block w-full px-3 py-2 text-sm
+    border-2 border-gray-300 
+    rounded-md 
+    shadow-sm
+    focus:outline-none 
+    focus:border-blue-500 
+    focus:ring-2 
+    focus:ring-blue-500 
+    focus:ring-opacity-50
+    bg-white'
+            >
+              {categories.map((cat) => (
+                <option key={cat} value={cat}>
+                  {cat}
+                </option>
+              ))}
+            </select>
 
             {/* Rich Text Editor */}
-            <div className='border rounded-lg'>
+            <div className='border-2 border-gray-300 rounded-lg overflow-hidden'>
               {/* Editor Toolbar */}
-              <div className='border-b p-2'>
+              <div className='border-b-2 border-gray-300 bg-gray-50 p-2'>
                 <div className='flex gap-2'>
-                  <button type='button' onClick={() => toggleInlineStyle('BOLD')} className='p-1 hover:bg-gray-200 rounded font-bold'>
+                  <button
+                    type='button'
+                    onClick={() => toggleInlineStyle('BOLD')}
+                    className='p-2 hover:bg-gray-200 rounded-md font-bold min-w-[32px] 
+          border border-gray-300 hover:border-gray-400 
+          transition-colors'
+                  >
                     B
                   </button>
-                  <button type='button' onClick={() => toggleInlineStyle('ITALIC')} className='p-1 hover:bg-gray-200 rounded italic'>
+                  <button
+                    type='button'
+                    onClick={() => toggleInlineStyle('ITALIC')}
+                    className='p-2 hover:bg-gray-200 rounded-md italic min-w-[32px] 
+          border border-gray-300 hover:border-gray-400 
+          transition-colors'
+                  >
                     I
                   </button>
-                  <button type='button' onClick={() => toggleInlineStyle('UNDERLINE')} className='p-1 hover:bg-gray-200 rounded underline'>
+                  <button
+                    type='button'
+                    onClick={() => toggleInlineStyle('UNDERLINE')}
+                    className='p-2 hover:bg-gray-200 rounded-md underline min-w-[32px] 
+          border border-gray-300 hover:border-gray-400 
+          transition-colors'
+                  >
                     U
                   </button>
-                  <button type='button' onClick={() => toggleBlockType('header-one')} className='p-1 hover:bg-gray-200 rounded font-bold'>
+                  <button
+                    type='button'
+                    onClick={() => toggleBlockType('header-one')}
+                    className='p-2 hover:bg-gray-200 rounded-md font-bold min-w-[32px] 
+          border border-gray-300 hover:border-gray-400 
+          transition-colors'
+                  >
                     H1
                   </button>
-                  <button type='button' onClick={() => toggleBlockType('unordered-list-item')} className='p-1 hover:bg-gray-200 rounded'>
+                  <button
+                    type='button'
+                    onClick={() => toggleBlockType('unordered-list-item')}
+                    className='p-2 hover:bg-gray-200 rounded-md min-w-[32px] 
+          border border-gray-300 hover:border-gray-400 
+          transition-colors'
+                  >
                     •
                   </button>
                 </div>
               </div>
-
               {/* Editor Content */}
-              <div className='p-3'>
+              <div className='p-4 min-h-[200px] bg-white'>
                 <Editor
                   editorState={editorState}
                   onChange={setEditorState}
@@ -187,7 +225,6 @@ const CreatePostForm: React.FC<CreatePostFormProps> = ({ onSubmit, onClose }) =>
                 />
               </div>
             </div>
-
             {/* Form Actions */}
             <div className='flex justify-end gap-4'>
               <Button type='button' variant='outline' onClick={() => setIsPreview(true)}>

@@ -9,6 +9,7 @@ import './globals.css';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
+import { Toaster } from 'react-hot-toast';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -97,7 +98,10 @@ export default function RootLayout({
             )}
 
             {/* Main content */}
-            <div className='flex-1 bg-gray-100 md:ml-0 pt-14 md:pt-0'>{children}</div>
+            <div className='flex-1 bg-gray-100 md:ml-0 pt-14 md:pt-0'>
+              {children}
+              <Toaster position='top-right' />
+            </div>
           </div>
         </Providers>
       </body>
