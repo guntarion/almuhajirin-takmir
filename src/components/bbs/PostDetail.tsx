@@ -3,26 +3,42 @@
 /**
  * File: src/components/bbs/PostDetail.tsx
  * Description: Component for displaying a single post's full content and details.
- * Includes interactive elements and accessibility improvements.
+ * Includes interactive elements, status management, and accessibility improvements.
  */
+
+import { useState } from 'react';
+import { toast } from 'react-hot-toast';
+import { convertFromRaw, ContentBlock } from 'draft-js';
+import { stateToHTML } from 'draft-js-export-html';
 
 interface Post {
   id: string;
   title: string;
   content: string;
   author: string;
+  authorId: string;
+  authorRole: string;
   date: string;
   category: string;
   commentCount: number;
   viewCount: number;
   isPinned: boolean;
+  status: string;
 }
 
 interface PostDetailProps {
   post: Post;
+  canManagePost: boolean;
+  currentUserRole: string;
 }
 
-export default function PostDetail({ post }: PostDetailProps) {
+// Roles that need approval for publishing
+const NEEDS_APPROVAL_ROLES = ['KOORDINATOR_ANAKREMAS', 'ANAK_REMAS'];
+
+export default function PostDetail({ post, canManagePost }: PostDetailProps) {
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [currentStatus, setCurrentStatus] = useState(post.status);
+
   // Format date to be more readable
   const formattedDate = new Date(post.date).toLocaleDateString('id-ID', {
     year: 'numeric',
@@ -31,6 +47,33 @@ export default function PostDetail({ post }: PostDetailProps) {
     hour: '2-digit',
     minute: '2-digit',
   });
+
+  const handleStatusChange = async (newStatus: string) => {
+    if (!canManagePost) return;
+
+    setIsUpdating(true);
+    try {
+      const response = await fetch(`/api/bbs/posts/${post.id}/status`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to update post status');
+      }
+
+      setCurrentStatus(newStatus);
+      toast.success(`Status berhasil diubah ke ${newStatus}`);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Failed to update post status');
+    } finally {
+      setIsUpdating(false);
+    }
+  };
 
   const handleShare = async () => {
     try {
@@ -43,7 +86,7 @@ export default function PostDetail({ post }: PostDetailProps) {
       } else {
         // Fallback: copy to clipboard
         await navigator.clipboard.writeText(window.location.href);
-        alert('Link telah disalin ke clipboard');
+        toast.success('Link telah disalin ke clipboard');
       }
     } catch (error) {
       console.error('Error sharing:', error);
@@ -54,23 +97,28 @@ export default function PostDetail({ post }: PostDetailProps) {
     <article className='bg-white p-8 rounded-lg shadow-sm border border-gray-100'>
       {/* Header */}
       <header className='mb-8'>
-        <div className='flex items-center gap-2 mb-4'>
-          {post.isPinned && (
-            <svg
-              className='h-5 w-5 text-blue-500'
-              xmlns='http://www.w3.org/2000/svg'
-              fill='none'
-              viewBox='0 0 24 24'
-              stroke='currentColor'
-              aria-hidden='true'
-            >
-              <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z' />
-            </svg>
-          )}
-          <h1 className='text-2xl font-bold text-gray-900'>
-            {post.isPinned && <span className='sr-only'>Dipin: </span>}
-            {post.title}
-          </h1>
+        <div className='flex items-center justify-between mb-4'>
+          <div className='flex items-center gap-2'>
+            {post.isPinned && (
+              <svg
+                className='h-5 w-5 text-blue-500'
+                xmlns='http://www.w3.org/2000/svg'
+                fill='none'
+                viewBox='0 0 24 24'
+                stroke='currentColor'
+                aria-hidden='true'
+              >
+                <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z' />
+              </svg>
+            )}
+            <h1 className='text-2xl font-bold text-gray-900'>
+              {post.isPinned && <span className='sr-only'>Dipin: </span>}
+              {post.title}
+            </h1>
+          </div>
+
+          {/* Status Badge */}
+          {currentStatus === 'DRAFT' && <span className='px-3 py-1 text-sm font-medium rounded-full bg-yellow-100 text-yellow-800'>Draft</span>}
         </div>
 
         <div className='flex flex-wrap items-center gap-4 text-sm'>
@@ -92,10 +140,69 @@ export default function PostDetail({ post }: PostDetailProps) {
             <span>{post.viewCount}</span>
           </div>
         </div>
+
+        {/* Status Management */}
+        {canManagePost && currentStatus === 'DRAFT' && (
+          <div className='mt-4 flex items-center gap-4'>
+            <button
+              onClick={() => handleStatusChange('PUBLISHED')}
+              disabled={isUpdating}
+              className='px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50'
+            >
+              {isUpdating ? 'Memproses...' : 'Terbitkan'}
+            </button>
+            <p className='text-sm text-gray-500'>
+              {NEEDS_APPROVAL_ROLES.includes(post.authorRole)
+                ? 'Post ini memerlukan persetujuan admin untuk diterbitkan'
+                : 'Post akan langsung diterbitkan'}
+            </p>
+          </div>
+        )}
       </header>
 
       {/* Content */}
-      <div className='prose max-w-none' dangerouslySetInnerHTML={{ __html: post.content }} />
+      <div
+        className='prose max-w-none'
+        dangerouslySetInnerHTML={{
+          __html: (() => {
+            try {
+              const rawContent = JSON.parse(post.content);
+              const contentState = convertFromRaw(rawContent);
+              const options = {
+                inlineStyles: {
+                  BOLD: { element: 'strong' },
+                  ITALIC: { element: 'em' },
+                  UNDERLINE: { element: 'u' },
+                },
+                blockStyleFn: (block: ContentBlock) => {
+                  const type = block.getType();
+                  if (type === 'header-one') {
+                    return {
+                      element: 'h1',
+                      attributes: {
+                        class: 'text-2xl font-bold my-4',
+                      },
+                    };
+                  }
+                  if (type === 'unordered-list-item') {
+                    return {
+                      element: 'li',
+                      wrapper: 'ul',
+                      attributes: {
+                        class: 'list-disc ml-4',
+                      },
+                    };
+                  }
+                },
+              };
+              return stateToHTML(contentState, options);
+            } catch (error) {
+              console.error('Error parsing content:', error);
+              return 'Error displaying content';
+            }
+          })(),
+        }}
+      />
 
       {/* Footer */}
       <footer className='mt-8 pt-8 border-t border-gray-100'>

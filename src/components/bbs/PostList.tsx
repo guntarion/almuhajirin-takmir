@@ -12,58 +12,14 @@ import { Pagination } from '../../components/ui/pagination';
 import SearchBar from './SearchBar';
 import CategoryFilter from './CategoryFilter';
 import SortingOptions from './SortingOptions';
+import { Post } from '../../lib/types/bbs';
 
-interface Post {
-  id: string;
-  title: string;
-  excerpt: string;
-  author: string;
-  date: string;
-  category: string;
-  commentCount: number;
-  viewCount: number;
-  isPinned: boolean;
+interface PostListProps {
+  posts: Post[];
 }
 
-export default function PostList() {
-  // Sample posts data - this would typically come from an API/database
-  const posts = [
-    {
-      id: '1',
-      title: 'Jadwal Kajian Rutin Bulan Ramadhan',
-      excerpt: 'Berikut adalah jadwal kajian rutin selama bulan Ramadhan 1445 H. Kajian akan dilaksanakan setiap hari setelah sholat tarawih...',
-      author: 'Ust. Ahmad',
-      date: '2024-03-10',
-      category: 'Kajian',
-      commentCount: 5,
-      viewCount: 120,
-      isPinned: true,
-    },
-    {
-      id: '2',
-      title: 'Pengumuman Pembentukan Panitia Zakat Fitrah',
-      excerpt: 'Dalam rangka menyambut bulan Ramadhan, Takmir Masjid Al-Muhajirin membuka pendaftaran untuk panitia zakat fitrah...',
-      author: 'H. Mahmud',
-      date: '2024-03-08',
-      category: 'Pengumuman',
-      commentCount: 3,
-      viewCount: 85,
-      isPinned: false,
-    },
-    {
-      id: '3',
-      title: 'Hasil Rapat Koordinasi Remaja Masjid',
-      excerpt: 'Hasil rapat koordinasi remaja masjid tanggal 5 Maret 2024 membahas program kerja dan kegiatan selama bulan Ramadhan...',
-      author: 'Ahmad Farhan',
-      date: '2024-03-05',
-      category: 'Rapat',
-      commentCount: 8,
-      viewCount: 95,
-      isPinned: false,
-    },
-  ];
-
-  const [filteredPosts, setFilteredPosts] = useState<Post[]>(posts);
+export default function PostList({ posts: initialPosts }: PostListProps) {
+  const [filteredPosts, setFilteredPosts] = useState<Post[]>(initialPosts);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [sortOption, setSortOption] = useState('newest');
@@ -72,12 +28,12 @@ export default function PostList() {
 
   // Filter and sort posts when search, category, or sort option changes
   useEffect(() => {
-    let result = [...posts];
+    let result = [...initialPosts];
 
     // Apply search filter
     if (searchTerm) {
       result = result.filter(
-        (post) => post.title.toLowerCase().includes(searchTerm.toLowerCase()) || post.excerpt.toLowerCase().includes(searchTerm.toLowerCase())
+        (post) => post.title.toLowerCase().includes(searchTerm.toLowerCase()) || post.excerpt?.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
@@ -106,7 +62,7 @@ export default function PostList() {
 
     setFilteredPosts(result);
     setCurrentPage(1); // Reset to first page when filters change
-  }, [searchTerm, selectedCategory, sortOption]);
+  }, [searchTerm, selectedCategory, sortOption, initialPosts]);
 
   // Calculate pagination
   const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
@@ -135,7 +91,7 @@ export default function PostList() {
               <PostItem
                 id={post.id}
                 title={post.title}
-                excerpt={post.excerpt}
+                excerpt={post.excerpt || ''}
                 author={post.author}
                 date={post.date}
                 category={post.category}

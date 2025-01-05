@@ -8,8 +8,9 @@
 
 // File: src/components/CreatePostForm.tsx
 
+import { Editor, EditorState, RichUtils, convertToRaw, ContentBlock } from 'draft-js';
 import React, { useState } from 'react';
-import { Editor, EditorState, RichUtils, convertToRaw } from 'draft-js';
+import { stateToHTML } from 'draft-js-export-html';
 import 'draft-js/dist/Draft.css';
 import { Button } from '../../components/ui/button';
 
@@ -22,6 +23,7 @@ interface CreatePostFormProps {
 interface PostData {
   title: string;
   content: string;
+  excerpt: string;
   category: PostCategory;
 }
 
@@ -42,9 +44,35 @@ const CreatePostForm: React.FC<CreatePostFormProps> = ({ onSubmit, onClose }) =>
     e?.preventDefault();
     const contentState = editorState.getCurrentContent();
     const rawContent = convertToRaw(contentState);
+
+    // Generate excerpt from the first block of content
+    const blocks = rawContent.blocks;
+    const firstBlock = blocks[0];
+    const excerptText = firstBlock.text.slice(0, 150) + (firstBlock.text.length > 150 ? '...' : '');
+
+    // Adjust inline style ranges for truncated text
+    const adjustedStyleRanges = firstBlock.inlineStyleRanges
+      .map((range) => ({
+        ...range,
+        length: Math.min(range.length, Math.max(0, 150 - range.offset)),
+      }))
+      .filter((range) => range.length > 0);
+
+    const excerptRawContent = {
+      blocks: [
+        {
+          ...firstBlock,
+          text: excerptText,
+          inlineStyleRanges: adjustedStyleRanges,
+        },
+      ],
+      entityMap: rawContent.entityMap,
+    };
+
     onSubmit({
       title,
       content: JSON.stringify(rawContent),
+      excerpt: JSON.stringify(excerptRawContent),
       category,
     });
   };
@@ -69,10 +97,37 @@ const CreatePostForm: React.FC<CreatePostFormProps> = ({ onSubmit, onClose }) =>
     setEditorState(RichUtils.toggleBlockType(editorState, type));
   };
 
-  // Custom function to render preview content
+  // Convert Draft.js content to HTML for preview
   const renderPreviewContent = () => {
     const contentState = editorState.getCurrentContent();
-    return contentState.getPlainText();
+    const options = {
+      inlineStyles: {
+        BOLD: { element: 'strong' },
+        ITALIC: { element: 'em' },
+        UNDERLINE: { element: 'u' },
+      },
+      blockStyleFn: (block: ContentBlock) => {
+        const type = block.getType();
+        if (type === 'header-one') {
+          return {
+            element: 'h1',
+            attributes: {
+              class: 'text-2xl font-bold my-4',
+            },
+          };
+        }
+        if (type === 'unordered-list-item') {
+          return {
+            element: 'li',
+            wrapper: 'ul',
+            attributes: {
+              class: 'list-disc ml-4',
+            },
+          };
+        }
+      },
+    };
+    return stateToHTML(contentState, options);
   };
 
   // Custom style map for the editor
@@ -102,7 +157,7 @@ const CreatePostForm: React.FC<CreatePostFormProps> = ({ onSubmit, onClose }) =>
             <div className='bg-gray-50 p-4 rounded-lg'>
               <h3 className='text-xl font-semibold text-gray-900'>{title}</h3>
               <span className='inline-block mt-2 px-3 py-1 text-sm text-blue-600 bg-blue-50 rounded-full'>{category}</span>
-              <div className='mt-4 prose max-w-none'>{renderPreviewContent()}</div>
+              <div className='mt-4 prose max-w-none' dangerouslySetInnerHTML={{ __html: renderPreviewContent() }} />
             </div>
             <div className='flex justify-end gap-4'>
               <Button type='button' variant='outline' onClick={() => setIsPreview(false)}>

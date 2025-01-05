@@ -1,46 +1,36 @@
 /**
  * File: src/lib/types/bbs.ts
- * Description: Type definitions for the bulletin board system.
- * Includes types for posts, comments, and related data structures.
+ * Description: Type definitions for the BBS (Bulletin Board System) feature
  */
 
 export interface Post {
   id: string;
   title: string;
   content: string;
-  excerpt: string;
+  excerpt?: string | null;
   author: string;
+  authorId: string;
   date: string;
-  category: PostCategory;
-  commentCount: number;
+  category: string;
   viewCount: number;
+  commentCount: number;
   isPinned: boolean;
-  isApproved?: boolean;
-}
-
-export interface Comment {
-  id: string;
-  postId: string;
-  content: string;
-  author: string;
-  date: string;
   isApproved: boolean;
-  parentId?: string; // For nested replies
-  replies?: Comment[];
+  status: string;
+  tags: string[];
 }
 
-export type PostCategory = 'Pengumuman' | 'Kajian' | 'Kegiatan' | 'Rapat' | 'Lainnya';
-
-export type SortOption = 'newest' | 'oldest' | 'most_comments' | 'most_views';
-
-export interface CreatePostData {
+export interface PostCreateInput {
   title: string;
   content: string;
-  category: PostCategory;
+  category: string;
+  tags?: string[];
 }
 
-export interface CreateCommentData {
-  postId: string;
-  content: string;
-  parentId?: string; // For replies
+export interface PostFilters {
+  search?: string;
+  category?: string;
+  sort: 'newest' | 'oldest' | 'most_comments' | 'most_views';
+  page: number;
+  limit: number;
 }
