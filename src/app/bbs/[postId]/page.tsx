@@ -6,11 +6,10 @@
 
 import { notFound } from 'next/navigation';
 import { getServerSession } from 'next-auth';
-import { prisma } from '@/lib/prisma';
-import PostDetail from '@/components/bbs/PostDetail';
-import CommentList from '@/components/bbs/CommentList';
-import CommentForm from '@/components/bbs/CommentForm';
-import { authOptions } from '@/lib/auth-config';
+import { prisma } from '../../../lib/prisma';
+import PostDetail from '../../../components/bbs/PostDetail';
+import CommentList from '../../../components/bbs/CommentList';
+import { authOptions } from '../../../lib/auth-config';
 
 // Roles that can view draft posts and manage post status
 const ADMIN_ROLES = ['TAKMIR', 'ADMIN', 'MARBOT'];
@@ -88,12 +87,7 @@ export default async function PostPage({ params }: { params: { postId: string } 
       <div className='bg-white p-6 rounded-lg shadow-sm border border-gray-100'>
         <h2 className='text-xl font-semibold mb-6'>Komentar ({post.commentCount})</h2>
 
-        {/* Comment Form */}
-        <div className='mb-8'>
-          <CommentForm postId={post.id} />
-        </div>
-
-        {/* Comment List */}
+        {/* Comment List with integrated CommentForm */}
         <CommentList postId={post.id} />
       </div>
     </div>
