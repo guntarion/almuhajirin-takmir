@@ -16,13 +16,14 @@ interface CategoryFilterProps {
 export default function CategoryFilter({ onCategoryChange }: CategoryFilterProps) {
   const [selectedCategory, setSelectedCategory] = useState('all');
 
-  // Sample categories - these would typically come from an API/database
+  // Categories matching the ones used in CreatePostForm and database
   const categories = [
     { value: 'all', label: 'Semua Kategori' },
-    { value: 'pengumuman', label: 'Pengumuman' },
-    { value: 'kegiatan', label: 'Kegiatan' },
-    { value: 'kajian', label: 'Kajian' },
-    { value: 'rapat', label: 'Rapat' },
+    { value: 'Pengumuman', label: 'Pengumuman' },
+    { value: 'Kajian', label: 'Kajian' },
+    { value: 'Kegiatan', label: 'Kegiatan' },
+    { value: 'Rapat', label: 'Rapat' },
+    { value: 'Lainnya', label: 'Lainnya' },
   ];
 
   const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {

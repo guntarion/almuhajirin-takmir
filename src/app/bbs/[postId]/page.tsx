@@ -65,10 +65,9 @@ async function getPost(postId: string, userRole?: string) {
 
 export default async function PostPage({ params }: { params: { postId: string } }) {
   // Await all async operations concurrently
-  const [session, post] = await Promise.all([
-    getServerSession(authOptions),
-    getPost(params.postId, (await getServerSession(authOptions))?.user?.role as string),
-  ]);
+  const { postId } = await params;
+  const session = await getServerSession(authOptions);
+  const post = await getPost(postId, session?.user?.role as string);
 
   const userRole = session?.user?.role as string;
 

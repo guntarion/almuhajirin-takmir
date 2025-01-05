@@ -14,12 +14,7 @@ import { Post } from '../../lib/types/bbs';
 async function getPosts(): Promise<Post[]> {
   const posts = await prisma.post.findMany({
     include: {
-      author: {
-        select: {
-          id: true,
-          name: true,
-        },
-      },
+      author: true,
       _count: {
         select: {
           comments: true,
@@ -40,7 +35,12 @@ async function getPosts(): Promise<Post[]> {
     title: post.title,
     excerpt: post.excerpt || '',
     content: post.content,
-    author: post.author.name || 'Unknown',
+    author: {
+      id: post.author.id,
+      name: post.author.name || 'Unknown',
+      username: post.author.username || 'unknown',
+      avatar: post.author.avatar || '/avatars/avatar-01.jpg',
+    },
     authorId: post.authorId,
     date: post.createdAt.toISOString(),
     category: post.category,

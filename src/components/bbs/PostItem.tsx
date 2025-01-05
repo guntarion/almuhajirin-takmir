@@ -9,10 +9,12 @@
 
 import Link from 'next/link';
 
+import { Author } from '../../lib/types/bbs';
+
 interface PostItemProps {
   title: string;
   excerpt: string;
-  author: string;
+  author: Author;
   date: string;
   category: string;
   commentCount: number;
@@ -74,7 +76,16 @@ export default function PostItem({ title, excerpt, author, date, category, comme
         <div className='mt-4 flex items-center justify-between text-sm'>
           <div className='flex items-center gap-4'>
             <span className='text-blue-600 bg-blue-50 px-2 py-1 rounded-full'>{category}</span>
-            <span className='text-gray-500'>oleh {author}</span>
+            <div className='flex items-center gap-2'>
+              <div className='h-6 w-6 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden'>
+                {author.avatar ? (
+                  <img src={author.avatar} alt={author.name} className='h-full w-full object-cover' />
+                ) : (
+                  <span className='text-xs font-medium text-gray-600'>{author.name.charAt(0).toUpperCase()}</span>
+                )}
+              </div>
+              <span className='text-gray-500'>oleh {author.name}</span>
+            </div>
             <time dateTime={date} className='text-gray-400'>
               {formattedDate}
             </time>

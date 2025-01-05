@@ -10,9 +10,9 @@ import { authOptions } from '../../../../../../lib/auth-config';
  * @param context - Contains route parameters including postId
  * @returns NextResponse with comments data or error
  */
-export async function GET(request: NextRequest, context: { params: { postId: string } }) {
+export async function GET(request: NextRequest, { params }: { params: { postId: string } }) {
   try {
-    const { postId } = context.params;
+    const { postId } = await params;
 
     // Fetch comments with author information and replies
     const comments = await prisma.comment.findMany({
@@ -61,14 +61,14 @@ export async function GET(request: NextRequest, context: { params: { postId: str
  * @param context - Contains route parameters including postId
  * @returns NextResponse with created comment or error
  */
-export async function POST(request: NextRequest, context: { params: { postId: string } }) {
+export async function POST(request: NextRequest, { params }: { params: { postId: string } }) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
-    const { postId } = context.params;
+    const { postId } = await params;
     const { content, parentId } = await request.json();
 
     // Validate input

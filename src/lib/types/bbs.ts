@@ -3,12 +3,19 @@
  * Description: Type definitions for the BBS (Bulletin Board System) feature
  */
 
+export interface Author {
+  id: string;
+  name: string;
+  username: string;
+  avatar: string;
+}
+
 export interface Post {
   id: string;
   title: string;
   content: string;
   excerpt?: string | null;
-  author: string;
+  author: Author;
   authorId: string;
   date: string;
   category: string;
