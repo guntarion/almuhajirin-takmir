@@ -65,10 +65,13 @@ async function getPost(postId: string, userRole?: string) {
 }
 
 export default async function PostPage({ params }: { params: { postId: string } }) {
-  const session = await getServerSession(authOptions);
-  const userRole = session?.user?.role as string;
+  // Await all async operations concurrently
+  const [session, post] = await Promise.all([
+    getServerSession(authOptions),
+    getPost(params.postId, (await getServerSession(authOptions))?.user?.role as string),
+  ]);
 
-  const post = await getPost(params.postId, userRole);
+  const userRole = session?.user?.role as string;
 
   if (!post) {
     notFound();

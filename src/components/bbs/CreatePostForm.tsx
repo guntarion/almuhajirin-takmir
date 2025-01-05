@@ -45,34 +45,15 @@ const CreatePostForm: React.FC<CreatePostFormProps> = ({ onSubmit, onClose }) =>
     const contentState = editorState.getCurrentContent();
     const rawContent = convertToRaw(contentState);
 
-    // Generate excerpt from the first block of content
+    // Generate plain text excerpt from the first block of content
     const blocks = rawContent.blocks;
     const firstBlock = blocks[0];
     const excerptText = firstBlock.text.slice(0, 150) + (firstBlock.text.length > 150 ? '...' : '');
 
-    // Adjust inline style ranges for truncated text
-    const adjustedStyleRanges = firstBlock.inlineStyleRanges
-      .map((range) => ({
-        ...range,
-        length: Math.min(range.length, Math.max(0, 150 - range.offset)),
-      }))
-      .filter((range) => range.length > 0);
-
-    const excerptRawContent = {
-      blocks: [
-        {
-          ...firstBlock,
-          text: excerptText,
-          inlineStyleRanges: adjustedStyleRanges,
-        },
-      ],
-      entityMap: rawContent.entityMap,
-    };
-
     onSubmit({
       title,
       content: JSON.stringify(rawContent),
-      excerpt: JSON.stringify(excerptRawContent),
+      excerpt: excerptText, // Store excerpt as plain text
       category,
     });
   };

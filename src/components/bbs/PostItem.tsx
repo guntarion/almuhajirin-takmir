@@ -8,8 +8,6 @@
  */
 
 import Link from 'next/link';
-import { convertFromRaw } from 'draft-js';
-import { stateToHTML } from 'draft-js-export-html';
 
 interface PostItemProps {
   title: string;
@@ -54,52 +52,22 @@ export default function PostItem({ title, excerpt, author, date, category, comme
                 {title}
               </h3>
             </div>
-            <p
-              className='text-gray-600 line-clamp-2'
-              dangerouslySetInnerHTML={{
-                __html: (() => {
-                  try {
-                    const rawContent = JSON.parse(excerpt);
-                    // Validate that this is actually Draft.js content
-                    if (!rawContent.blocks || !Array.isArray(rawContent.blocks)) {
-                      return excerpt;
-                    }
-                    const contentState = convertFromRaw(rawContent);
-                    const options = {
-                      inlineStyles: {
-                        BOLD: { element: 'strong' },
-                        ITALIC: { element: 'em' },
-                        UNDERLINE: { element: 'u' },
-                      },
-                      blockStyleFn: (block: ContentBlock) => {
-                        const type = block.getType();
-                        if (type === 'header-one') {
-                          return {
-                            element: 'h1',
-                            attributes: {
-                              class: 'text-2xl font-bold my-4',
-                            },
-                          };
-                        }
-                        if (type === 'unordered-list-item') {
-                          return {
-                            element: 'li',
-                            wrapper: 'ul',
-                            attributes: {
-                              class: 'list-disc ml-4',
-                            },
-                          };
-                        }
-                      },
-                    };
-                    return stateToHTML(contentState, options);
-                  } catch {
-                    // If excerpt is not valid JSON or Draft.js content, display as plain text
-                    return excerpt;
+            <p className='text-gray-600 line-clamp-2'>
+              {(() => {
+                try {
+                  // Try to parse as JSON first (for existing data)
+                  const parsedExcerpt = JSON.parse(excerpt);
+                  // If it's Draft.js format, get text from first block
+                  if (parsedExcerpt.blocks && Array.isArray(parsedExcerpt.blocks)) {
+                    return parsedExcerpt.blocks[0].text;
                   }
-                })(),
-              }}
-            />
+                  return excerpt;
+                } catch {
+                  // If not valid JSON, display as plain text (for new data)
+                  return excerpt;
+                }
+              })()}
+            </p>
           </div>
         </div>
 

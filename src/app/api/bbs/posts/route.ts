@@ -100,13 +100,27 @@ export async function POST(request: Request) {
   }
 
   try {
-    const { title, content, category, tags, status } = await request.json();
+    const { title, content, excerpt, category, tags, status } = await request.json();
+
+    // Parse the content to get plain text for excerpt if not provided
+    let finalExcerpt = excerpt;
+    if (!finalExcerpt) {
+      try {
+        const contentObj = JSON.parse(content);
+        if (contentObj.blocks && Array.isArray(contentObj.blocks)) {
+          finalExcerpt = contentObj.blocks[0].text.slice(0, 200);
+        }
+      } catch {
+        // If parsing fails, use raw content
+        finalExcerpt = content.slice(0, 200);
+      }
+    }
 
     const post = await prisma.post.create({
       data: {
         title,
         content,
-        excerpt: content.slice(0, 200),
+        excerpt: finalExcerpt,
         category,
         tags: JSON.stringify(tags || []),
         status: status || 'DRAFT',
