@@ -10,11 +10,22 @@ import type { z } from 'zod';
 interface User {
   id: string;
   name: string;
+  panggilan: string;
+  gender: string;
   username: string;
   email: string;
   role: UserRole;
   active: boolean;
+  kategori: string;
   groupId?: string;
+  tanggalLahir?: string;
+  nomerWhatsapp?: string;
+  alamatRumah?: string;
+  rwRumah?: string;
+  rtRumah?: string;
+  sekolah?: string;
+  kelas?: number;
+  keterangan?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -30,7 +41,7 @@ type FormRole = z.infer<typeof userFormSchema>['role'];
 type UserFormData = z.infer<typeof userFormSchema>;
 
 const isAllowedRole = (role: UserRole): role is FormRole => {
-  return [UserRole.ANAK_REMAS, UserRole.ORANG_TUA, UserRole.ADMIN].includes(role);
+  return [UserRole.KOORDINATOR_ANAKREMAS, UserRole.ANAK_REMAS, UserRole.MARBOT, UserRole.TAKMIR, UserRole.ADMIN, UserRole.ORANG_TUA].includes(role);
 };
 
 export default function KelolaUserPage() {
@@ -183,9 +194,21 @@ export default function KelolaUserPage() {
 
     return {
       name: user.name,
+      panggilan: user.panggilan,
+      gender: user.gender as 'Lelaki' | 'Perempuan',
       username: user.username,
       email: user.email,
       role: user.role,
+      active: user.active,
+      kategori: user.kategori as 'mkidz' | 'laz',
+      tanggalLahir: user.tanggalLahir ? new Date(user.tanggalLahir) : undefined,
+      nomerWhatsapp: user.nomerWhatsapp,
+      alamatRumah: user.alamatRumah,
+      rwRumah: user.rwRumah as 'RW 6 Rewwin' | 'RW 8 Rewwin' | 'RW 9 Rewwin' | 'other' | undefined,
+      rtRumah: user.rtRumah,
+      sekolah: user.sekolah,
+      kelas: user.kelas,
+      keterangan: user.keterangan,
       ...(user.groupId && { anakremasId: user.groupId }),
     };
   };
@@ -216,9 +239,12 @@ export default function KelolaUserPage() {
         />
         <select value={selectedRole} onChange={(e) => setSelectedRole(e.target.value as UserRole | '')} className='px-3 py-2 border rounded-md'>
           <option value=''>All Roles</option>
-          <option value={UserRole.ANAK_REMAS}>Anak Remas</option>
-          <option value={UserRole.ORANG_TUA}>Orang Tua</option>
+          <option value={UserRole.KOORDINATOR_ANAKREMAS}>Koordinator</option>
+          <option value={UserRole.ANAK_REMAS}>Anggota</option>
+          <option value={UserRole.MARBOT}>Marbot</option>
+          <option value={UserRole.TAKMIR}>Takmir</option>
           <option value={UserRole.ADMIN}>Admin</option>
+          <option value={UserRole.ORANG_TUA}>Orang Tua/Wali</option>
         </select>
       </div>
 
@@ -236,10 +262,13 @@ export default function KelolaUserPage() {
               <thead className='bg-gray-50'>
                 <tr>
                   <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>Name</th>
+                  <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>Panggilan</th>
+                  <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>Gender</th>
                   <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>Username</th>
                   <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>Email</th>
                   <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>Role</th>
                   <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>Status</th>
+                  <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>Kategori</th>
                   <th className='px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider'>Actions</th>
                 </tr>
               </thead>
@@ -247,6 +276,8 @@ export default function KelolaUserPage() {
                 {users.map((user) => (
                   <tr key={user.id}>
                     <td className='px-6 py-4 whitespace-nowrap'>{user.name}</td>
+                    <td className='px-6 py-4 whitespace-nowrap'>{user.panggilan}</td>
+                    <td className='px-6 py-4 whitespace-nowrap'>{user.gender}</td>
                     <td className='px-6 py-4 whitespace-nowrap'>{user.username}</td>
                     <td className='px-6 py-4 whitespace-nowrap'>{user.email}</td>
                     <td className='px-6 py-4 whitespace-nowrap'>{user.role}</td>
@@ -259,6 +290,7 @@ export default function KelolaUserPage() {
                         {user.active ? 'Active' : 'Inactive'}
                       </span>
                     </td>
+                    <td className='px-6 py-4 whitespace-nowrap'>{user.kategori}</td>
                     <td className='px-6 py-4 whitespace-nowrap text-right text-sm font-medium'>
                       <button
                         onClick={() => {

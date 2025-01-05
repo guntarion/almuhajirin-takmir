@@ -1,9 +1,12 @@
 // src/lib/types/auth.ts
 
 export enum UserRole {
+  KOORDINATOR_ANAKREMAS = 'KOORDINATOR_ANAKREMAS',
   ANAK_REMAS = 'ANAK_REMAS',
-  ORANG_TUA = 'ORANG_TUA',
+  MARBOT = 'MARBOT',
+  TAKMIR = 'TAKMIR',
   ADMIN = 'ADMIN',
+  ORANG_TUA = 'ORANG_TUA',
 }
 
 export interface LoginFormData {

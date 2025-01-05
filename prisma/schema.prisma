@@ -100,19 +100,24 @@ model Notification {
 model User {
   id            String    @id @default(cuid())
   name          String
+  panggilan     String    @default("")
+  gender        String    @default("")
   username      String    @unique
   email         String    @unique
   password      String
   role          String    @default("ANAK_REMAS")
   active        Boolean   @default(true)
+  kategori      String    @default("mkidz")
   groupId       String?
   avatar        String?   @default("/avatars/avatar-01.jpg")
   tanggalLahir  DateTime?
+  age           Int       @default(0)
   nomerWhatsapp String?
   alamatRumah   String?
   rwRumah       String?
   rtRumah       String?
   sekolah       String?
+  kelas         Int?
   keterangan    String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt

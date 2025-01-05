@@ -13,13 +13,21 @@ import { authOptions } from '../../../../lib/auth-config';
 // Validation schema for profile updates
 const profileUpdateSchema = z.object({
   name: z.string().min(1, 'Name is required'),
+  panggilan: z.string().optional(),
+  gender: z.string().optional(),
   email: z.string().email('Invalid email format'),
   avatar: z.string().optional(),
   tanggalLahir: z
     .string()
     .nullable()
     .transform((val) => (val ? new Date(val) : null)),
-  nomerWhatsapp: z.string().regex(/^(\+62|62|0)8[1-9][0-9]{6,9}$/, 'Invalid WhatsApp number format'),
+  nomerWhatsapp: z
+    .string()
+    .refine((val) => !val || /^(\+62|62|0)8[1-9][0-9]{6,9}$/.test(val), {
+      message: 'Invalid WhatsApp number format',
+    })
+    .optional()
+    .nullable(),
   alamatRumah: z.string().optional().nullable(),
   rwRumah: z.string().optional().nullable(),
   rtRumah: z.string().optional().nullable(),

@@ -17,6 +17,8 @@ import { Select } from '@/components/ui/select';
 // Interface for form data
 interface ProfileFormData {
   name: string;
+  panggilan: string;
+  gender: string;
   email: string;
   whatsapp: string;
   address: string;
@@ -63,6 +65,8 @@ export default function ProfilePage() {
   // Initial form state
   const [formData, setFormData] = useState<ProfileFormData>({
     name: '',
+    panggilan: '',
+    gender: '',
     email: '',
     whatsapp: '',
     address: '',
@@ -91,6 +95,8 @@ export default function ProfilePage() {
 
         setFormData({
           name: data.user.name || '',
+          panggilan: data.user.panggilan || '',
+          gender: data.user.gender || '',
           email: data.user.email || '',
           whatsapp: data.user.nomerWhatsapp || '',
           address: data.user.alamatRumah || '',
@@ -137,10 +143,10 @@ export default function ProfilePage() {
     setMessage({ type: '', content: '' });
 
     // Basic validation
-    if (!formData.name || !formData.email || !formData.whatsapp) {
+    if (!formData.name || !formData.email) {
       setMessage({
         type: 'error',
-        content: 'Nama Display, Email, dan Nomer WhatsApp harus diisi',
+        content: 'Nama Display dan Email harus diisi',
       });
       setIsLoading(false);
       return;
@@ -157,21 +163,25 @@ export default function ProfilePage() {
       return;
     }
 
-    // WhatsApp number validation (Indonesian format)
-    const whatsappRegex = /^(\+62|62|0)8[1-9][0-9]{6,9}$/;
-    if (!whatsappRegex.test(formData.whatsapp)) {
-      setMessage({
-        type: 'error',
-        content: 'Format nomor WhatsApp tidak valid (gunakan format Indonesia)',
-      });
-      setIsLoading(false);
-      return;
+    // WhatsApp number validation (Indonesian format) - only if provided
+    if (formData.whatsapp) {
+      const whatsappRegex = /^(\+62|62|0)8[1-9][0-9]{6,9}$/;
+      if (!whatsappRegex.test(formData.whatsapp)) {
+        setMessage({
+          type: 'error',
+          content: 'Format nomor WhatsApp tidak valid (gunakan format Indonesia)',
+        });
+        setIsLoading(false);
+        return;
+      }
     }
 
     try {
       console.log('Making API call to:', '/api/users/profile');
       console.log('Request payload:', {
         name: formData.name,
+        panggilan: formData.panggilan,
+        gender: formData.gender,
         email: formData.email,
         avatar: formData.avatar,
         tanggalLahir: formData.birthDate || null,
@@ -190,6 +200,8 @@ export default function ProfilePage() {
         },
         body: JSON.stringify({
           name: formData.name,
+          panggilan: formData.panggilan,
+          gender: formData.gender,
           email: formData.email,
           avatar: formData.avatar,
           tanggalLahir: formData.birthDate || null,
@@ -232,6 +244,8 @@ export default function ProfilePage() {
       // Reset form data to original values
       setFormData({
         name: session.user.name || '',
+        panggilan: '',
+        gender: '',
         email: session.user.email || '',
         whatsapp: '',
         address: '',
@@ -316,12 +330,33 @@ export default function ProfilePage() {
             {/* Name and Birth Date Row */}
             <div className='grid grid-cols-2 gap-4'>
               <div className='space-y-2'>
-                <label className='block text-sm font-medium'>Nama Display</label>
+                <label className='block text-sm font-medium'>Nama Lengkap</label>
                 <Input type='text' name='name' value={formData.name} onChange={handleInputChange} disabled={!isEditing} required />
               </div>
               <div className='space-y-2'>
                 <label className='block text-sm font-medium'>Tanggal Lahir</label>
                 <Input type='date' name='birthDate' value={formData.birthDate} onChange={handleInputChange} disabled={!isEditing} />
+              </div>
+            </div>
+
+            {/* Panggilan and Gender Row */}
+            <div className='grid grid-cols-2 gap-4'>
+              <div className='space-y-2'>
+                <label className='block text-sm font-medium'>Nama Panggilan</label>
+                <Input type='text' name='panggilan' value={formData.panggilan} onChange={handleInputChange} disabled={!isEditing} />
+              </div>
+              <div className='space-y-2'>
+                <label className='block text-sm font-medium'>Gender</label>
+                <Select
+                  name='gender'
+                  value={formData.gender}
+                  onChange={handleInputChange}
+                  disabled={!isEditing}
+                  options={[
+                    { value: 'Lelaki', label: 'Lelaki' },
+                    { value: 'Perempuan', label: 'Perempuan' },
+                  ]}
+                />
               </div>
             </div>
 
@@ -340,7 +375,6 @@ export default function ProfilePage() {
                   onChange={handleInputChange}
                   disabled={!isEditing}
                   placeholder='Contoh: 081234567890'
-                  required
                 />
               </div>
             </div>

@@ -30,8 +30,21 @@ const roleAccess: Record<UserRole, string[]> = {
     '/kelola-user',
     '/api/users',
   ],
-  ORANG_TUA: ['/orangtua', '/orangtua/dashboard', '/leaderboard', '/home', '/bbs', '/profil'],
+  KOORDINATOR_ANAKREMAS: [
+    '/koordinator',
+    '/koordinator/dashboard',
+    '/anakremas',
+    '/anakremas/dashboard',
+    '/aktivitas',
+    '/leaderboard',
+    '/home',
+    '/bbs',
+    '/profil',
+  ],
   ANAK_REMAS: ['/anakremas', '/anakremas/dashboard', '/aktivitas', '/leaderboard', '/home', '/bbs', '/profil'],
+  MARBOT: ['/marbot', '/marbot/dashboard', '/aktivitas', '/leaderboard', '/home', '/bbs', '/profil'],
+  TAKMIR: ['/takmir', '/takmir/dashboard', '/aktivitas', '/leaderboard', '/home', '/bbs', '/profil'],
+  ORANG_TUA: ['/orangtua', '/orangtua/dashboard', '/leaderboard', '/home', '/bbs', '/profil'],
 };
 
 // Helper function to check if a path matches any of the allowed routes
