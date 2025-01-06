@@ -171,6 +171,8 @@ model Activity {
   validators     ActivityValidator[]
   targets        ActivityTarget[]
   combos         ActivityCombo[]     @relation("activityCombos")
+
+  @@map("activities")
 }
 
 model UserActivity {

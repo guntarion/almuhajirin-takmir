@@ -83,6 +83,10 @@ export default function RootLayout({
                   <Users className='w-5 h-5 mr-2' />
                   <span>Kelola User</span>
                 </Link>
+                <Link href='/admin/aktivitas' className='flex items-center p-2 rounded-lg hover:bg-gray-700 mt-2'>
+                  <Activity className='w-5 h-5 mr-2' />
+                  <span>Kelola Aktivitas</span>
+                </Link>
                 <div className='mt-4 border-t border-gray-700 pt-4'>
                   <LogoutButton />
                 </div>
