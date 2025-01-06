@@ -1,6 +1,5 @@
 ./postcss.config.mjs
 ./prisma
-./prisma/.DS_Store
 ./prisma/schema.prisma
 ./prisma/seed.ts
 ./update-history.md
@@ -9,7 +8,6 @@
 ./README.md
 ./tailwind.config.ts
 ./public
-./public/.DS_Store
 ./public/file.svg
 ./public/logo-yamr.png
 ./public/icons
@@ -35,14 +33,12 @@
 ./next.config.ts
 ./src
 ./src/middleware.ts
-./src/.DS_Store
 ./src/app
 ./src/app/home
 ./src/app/home/page.tsx
 ./src/app/profil
 ./src/app/profil/page.tsx
 ./src/app/favicon.ico
-./src/app/.DS_Store
 ./src/app/auth
 ./src/app/auth/register
 ./src/app/auth/register/page.tsx
@@ -81,7 +77,6 @@
 ./src/components/ui/button.tsx
 ./src/components/ui/select.tsx
 ./src/components/ui/input.tsx
-./src/components/.DS_Store
 ./src/components/auth
 ./src/components/auth/LoginForm.tsx
 ./src/components/auth/RegisterForm.tsx
@@ -93,7 +88,6 @@
 ./src/lib/prisma.ts
 ./src/lib/types
 ./src/lib/types/auth.ts
-./src/lib/.DS_Store
 ./src/lib/utils
 ./src/lib/utils/auth.ts
 ./src/lib/auth.ts

@@ -2,8 +2,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { UserRole } from '../../lib/types/auth';
-import { UserForm, userFormSchema } from '../../components/kelola-user/user-form';
+import { UserRole } from '../../../lib/types/auth';
+import { UserForm, userFormSchema } from '../../../components/kelola-user/user-form';
 import { useRouter } from 'next/navigation';
 import type { z } from 'zod';
 
@@ -280,18 +280,36 @@ export default function KelolaUserPage() {
                             setSelectedUser(user);
                             setShowForm(true);
                           }}
-                          className='text-blue-600 hover:text-blue-900 mr-4'
+                          className='text-gray-500 hover:text-blue-600 transition-colors p-2 rounded-full hover:bg-gray-100 mr-2'
+                          title='Edit'
+                          aria-label='Edit user'
                         >
-                          Edit
+                          <svg className='h-5 w-5' xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
+                            <path
+                              strokeLinecap='round'
+                              strokeLinejoin='round'
+                              strokeWidth={2}
+                              d='M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z'
+                            />
+                          </svg>
                         </button>
                         <button
                           onClick={() => {
                             setUserToDelete(user.id);
                             setShowDeleteConfirm(true);
                           }}
-                          className='text-red-600 hover:text-red-900'
+                          className='text-red-500 hover:text-red-600 transition-colors p-2 rounded-full hover:bg-red-50'
+                          title='Delete'
+                          aria-label='Delete user'
                         >
-                          Delete
+                          <svg className='h-5 w-5' xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
+                            <path
+                              strokeLinecap='round'
+                              strokeLinejoin='round'
+                              strokeWidth={2}
+                              d='M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16'
+                            />
+                          </svg>
                         </button>
                       </td>
                       <td className='px-6 py-4 whitespace-nowrap'>{user.name}</td>

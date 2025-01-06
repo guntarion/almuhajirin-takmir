@@ -171,6 +171,8 @@ model Activity {
   validators     ActivityValidator[]
   targets        ActivityTarget[]
   combos         ActivityCombo[]     @relation("activityCombos")
+
+  @@map("Activity") // Explicitly map the model to the "Activity" table
 }
 
 model UserActivity {

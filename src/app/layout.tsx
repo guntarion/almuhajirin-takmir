@@ -3,7 +3,7 @@
 
 import { Geist, Geist_Mono } from 'next/font/google';
 import Providers from '../components/auth/Providers';
-import { Home, UserCog, Users, Activity, Trophy, Menu, MessageSquare } from 'lucide-react';
+import { Home, UserCog, Users, Activity, Trophy, Menu, MessageSquare, ChevronDown, ChevronUp, Settings, List, Edit, Award } from 'lucide-react';
 import { LogoutButton } from '../components/auth/LogoutButton';
 import './globals.css';
 import Image from 'next/image';
@@ -27,6 +27,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isPenyetinganOpen, setIsPenyetinganOpen] = useState(false);
 
   return (
     <html lang='en'>
@@ -79,10 +80,49 @@ export default function RootLayout({
                   <UserCog className='w-5 h-5 mr-2' />
                   <span>Profil</span>
                 </Link>
-                <Link href='/kelola-user' className='flex items-center p-2 rounded-lg hover:bg-gray-700 mt-2'>
-                  <Users className='w-5 h-5 mr-2' />
-                  <span>Kelola User</span>
-                </Link>
+
+                {/* Penyetingan with sub-items */}
+                <div className='mt-2'>
+                  <button
+                    onClick={() => setIsPenyetinganOpen(!isPenyetinganOpen)}
+                    className='flex items-center justify-between w-full p-2 rounded-lg hover:bg-gray-700'
+                  >
+                    <span className='flex items-center'>
+                      <Settings className='w-5 h-5 mr-2' />
+                      <span>Penyetingan</span>
+                    </span>
+                    {isPenyetinganOpen ? <ChevronUp className='w-5 h-5' /> : <ChevronDown className='w-5 h-5' />}
+                  </button>
+                  {isPenyetinganOpen && (
+                    <div className='pl-6 mt-2'>
+                      <Link href='/admin/kelola-user' className='flex items-center p-2 rounded-lg hover:bg-gray-700'>
+                        <span className='flex items-center'>
+                          <Users className='w-5 h-5 mr-2' />
+                          <span>Pengguna</span>
+                        </span>
+                      </Link>
+                      <Link href='/admin/aktivitas' className='flex items-center p-2 rounded-lg hover:bg-gray-700'>
+                        <span className='flex items-center'>
+                          <List className='w-5 h-5 mr-2' /> {/* Updated icon */}
+                          <span>Aktivitas</span>
+                        </span>
+                      </Link>
+                      <Link href='/admin//assignment' className='flex items-center p-2 rounded-lg hover:bg-gray-700'>
+                        <span className='flex items-center'>
+                          <Edit className='w-5 h-5 mr-2' /> {/* Updated icon */}
+                          <span>Assignment</span>
+                        </span>
+                      </Link>
+                      <Link href='/admin/achievement' className='flex items-center p-2 rounded-lg hover:bg-gray-700'>
+                        <span className='flex items-center'>
+                          <Award className='w-5 h-5 mr-2' /> {/* Updated icon */}
+                          <span>Pencapaian</span>
+                        </span>
+                      </Link>
+                    </div>
+                  )}
+                </div>
+
                 <div className='mt-4 border-t border-gray-700 pt-4'>
                   <LogoutButton />
                 </div>
