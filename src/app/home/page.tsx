@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react'; // Remove useEffect
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { FaFire, FaTrophy, FaMedal, FaThumbsUp, FaThumbsDown } from 'react-icons/fa';
 import Image from 'next/image';
@@ -17,25 +17,28 @@ interface DeedCounter {
 }
 
 const HomePage = () => {
-  const [totalScore, setTotalScore] = useState(340);
-  const nextLevelScore = 375;
+  // Level and streak states
   const [level, setLevel] = useState(3);
   const [streak, setStreak] = useState(7);
+  const nextLevelScore = 375;
   const userName = 'Muhajirin Kids';
 
-  // Change existing good deeds related states
-  const [mainGoodDeedsToday, setMainGoodDeedsToday] = useState(0);
+  // Main Good Deeds states
+  const [mainGoodDeedsActivity, setMainGoodDeedsActivity] = useState(0);
   const [mainGoodDeedsScore, setMainGoodDeedsScore] = useState(0);
   const [mainGoodDeedCounters, setMainGoodDeedCounters] = useState<{ [key: string]: DeedCounter }>({});
-  const [badDeedsToday, setBadDeedsToday] = useState(0);
-  const [badDeedsScore, setBadDeedsScore] = useState(0);
-  const [badDeedCounters, setBadDeedCounters] = useState<{ [key: string]: DeedCounter }>({});
 
-  // Add new states for additional good deeds
+  // Additional Good Deeds states
   const [additionalGoodDeedsNow, setAdditionalGoodDeedsNow] = useState(0);
   const [additionalGoodDeedsScore, setAdditionalGoodDeedsScore] = useState(0);
   const [additionalGoodDeedCounters, setAdditionalGoodDeedCounters] = useState<{ [key: string]: DeedCounter }>({});
 
+  // Bad Deeds states
+  const [badDeedsToday, setBadDeedsToday] = useState(0);
+  const [badDeedsScore, setBadDeedsScore] = useState(0);
+  const [badDeedCounters, setBadDeedCounters] = useState<{ [key: string]: DeedCounter }>({});
+
+  // Deed lists
   const mainGoodDeedsList: Deed[] = [
     { label: 'Help Someone', points: 10, maxFrequency: 4 },
     { label: 'Complete Homework', points: 15, maxFrequency: 3 },
@@ -59,124 +62,208 @@ const HomePage = () => {
     { label: 'Being Mean', points: 10, maxFrequency: 4 },
   ];
 
+  // Calculate maximum possible points
   const maxPossibleMainGoodPoints = mainGoodDeedsList.reduce((total: number, deed) => total + deed.points * deed.maxFrequency, 0);
   const maxPossibleAdditionalGoodPoints = additionalGoodDeedsList.reduce((total: number, deed) => total + deed.points * deed.maxFrequency, 0);
 
-  // Calculate progress percentage
+  // Calculate total score and progress
+  const totalScore = mainGoodDeedsScore + additionalGoodDeedsScore - badDeedsScore;
   const progressPercentage = ((totalScore - level * 100) / ((level + 1) * 100 - level * 100)) * 100;
 
+  // Background gradient calculation
   const getBackgroundGradient = (score: number) => {
     const hue = Math.min(120, Math.max(0, score));
     return `linear-gradient(135deg, hsl(${hue}, 70%, 50%), hsl(${hue + 40}, 70%, 60%))`;
   };
 
+  /**
+   * Handles the main good deed actions
+   * @param deed The deed being performed
+   */
   const handleGoodDeed = (deed: Deed) => {
     setMainGoodDeedCounters((prev: { [key: string]: DeedCounter }) => {
+      // Get current counter for this specific deed
       const current = prev[deed.label] || { count: 0, totalPoints: 0 };
       const newCount = current.count + 1;
 
+      // Check if we've reached the maximum frequency for this deed
       if (newCount > deed.maxFrequency) {
-        // Reset counters
-        setMainGoodDeedsToday(() => 0);
-        setMainGoodDeedsScore(() => 0);
-        return {
+        // Create new counters object with this deed reset to zero
+        const updatedCounters = {
           ...prev,
           [deed.label]: {
             count: 0,
             totalPoints: 0,
           },
         };
-      }
 
-      // Normal increment
-      setMainGoodDeedsToday(() => newCount);
-      setMainGoodDeedsScore(() => newCount * deed.points);
+        // Calculate new totals from all deeds after reset
+        // This ensures we maintain proper counts from other deeds
+        const newTotals = Object.values(updatedCounters).reduce(
+          (acc, deed) => ({
+            activity: acc.activity + deed.count,
+            score: acc.score + deed.totalPoints,
+          }),
+          { activity: 0, score: 0 }
+        );
 
-      return {
-        ...prev,
-        [deed.label]: {
-          count: newCount,
-          totalPoints: newCount * deed.points,
-        },
-      };
-    });
+        // Update the main good deeds activity and score counters
+        setMainGoodDeedsActivity(newTotals.activity);
+        setMainGoodDeedsScore(newTotals.score);
 
-    // Handle total score and leveling up
-    setTotalScore((prev: number) => {
-      const newScore = prev + deed.points;
-      if (newScore >= nextLevelScore) {
-        setLevel((prevLevel: number) => prevLevel + 1);
-        return 0;
-      }
-      return newScore;
-    });
-  };
-
-  const handleAdditionalGoodDeed = (deed: Deed) => {
-    setAdditionalGoodDeedCounters((prev) => {
-      const current = prev[deed.label] || { count: 0, totalPoints: 0 };
-      const newCount = current.count + 1;
-      if (newCount > deed.maxFrequency) {
-        setAdditionalGoodDeedsNow((prevTotal) => prevTotal - current.count);
-        setAdditionalGoodDeedsScore((prevScore) => prevScore - current.totalPoints);
-        setTotalScore((prevScore) => Math.max(0, prevScore - current.totalPoints));
-        return {
-          ...prev,
-          [deed.label]: {
-            count: 0,
-            totalPoints: 0,
-          },
-        };
-      }
-
-      setTotalScore((prev) => {
-        const newScore = prev + deed.points;
-        if (newScore >= nextLevelScore) {
+        // Check for level up based on new calculated total
+        const newTotalScore = newTotals.score + additionalGoodDeedsScore - badDeedsScore;
+        if (newTotalScore >= nextLevelScore) {
           setLevel((prevLevel) => prevLevel + 1);
-          return 0;
         }
-        return newScore;
-      });
-      return {
+
+        return updatedCounters;
+      }
+
+      // If we haven't reached max frequency, update the counters
+      const updatedCounters = {
         ...prev,
         [deed.label]: {
           count: newCount,
           totalPoints: current.totalPoints + deed.points,
         },
       };
+
+      // Calculate new totals after increment
+      const newTotals = Object.values(updatedCounters).reduce(
+        (acc, deed) => ({
+          activity: acc.activity + deed.count,
+          score: acc.score + deed.totalPoints,
+        }),
+        { activity: 0, score: 0 }
+      );
+
+      // Update the main good deeds activity and score counters
+      setMainGoodDeedsActivity(newTotals.activity);
+      setMainGoodDeedsScore(newTotals.score);
+
+      // Check for level up based on new calculated total
+      const newTotalScore = newTotals.score + additionalGoodDeedsScore - badDeedsScore;
+      if (newTotalScore >= nextLevelScore) {
+        setLevel((prevLevel) => prevLevel + 1);
+      }
+
+      return updatedCounters;
     });
-    setAdditionalGoodDeedsNow((prev) => prev + 1);
-    setAdditionalGoodDeedsScore((prev) => prev + deed.points);
-    setTotalScore((prevScore) => Math.max(0, prevScore - deed.points));
   };
-  const handleBadDeed = (deed: Deed) => {
-    setBadDeedCounters((prev) => {
+
+  // Additional Good Deeds handler - follows same pattern as handleGoodDeed
+  const handleAdditionalGoodDeed = (deed: Deed) => {
+    setAdditionalGoodDeedCounters((prev: { [key: string]: DeedCounter }) => {
       const current = prev[deed.label] || { count: 0, totalPoints: 0 };
       const newCount = current.count + 1;
+
       if (newCount > deed.maxFrequency) {
-        setBadDeedsToday((prevTotal) => prevTotal - current.count);
-        setBadDeedsScore((prevScore) => prevScore - current.totalPoints);
-        setTotalScore((prevScore) => Math.min(nextLevelScore - 1, prevScore + current.totalPoints));
-        return {
+        const updatedCounters = {
           ...prev,
           [deed.label]: {
             count: 0,
             totalPoints: 0,
           },
         };
+
+        const newTotals = Object.values(updatedCounters).reduce(
+          (acc, deed) => ({
+            activity: acc.activity + deed.count,
+            score: acc.score + deed.totalPoints,
+          }),
+          { activity: 0, score: 0 }
+        );
+
+        setAdditionalGoodDeedsNow(newTotals.activity);
+        setAdditionalGoodDeedsScore(newTotals.score);
+
+        const newTotalScore = mainGoodDeedsScore + newTotals.score - badDeedsScore;
+        if (newTotalScore >= nextLevelScore) {
+          setLevel((prevLevel) => prevLevel + 1);
+        }
+
+        return updatedCounters;
       }
 
-      return {
+      const updatedCounters = {
         ...prev,
         [deed.label]: {
           count: newCount,
           totalPoints: current.totalPoints + deed.points,
         },
       };
+
+      const newTotals = Object.values(updatedCounters).reduce(
+        (acc, deed) => ({
+          activity: acc.activity + deed.count,
+          score: acc.score + deed.totalPoints,
+        }),
+        { activity: 0, score: 0 }
+      );
+
+      setAdditionalGoodDeedsNow(newTotals.activity);
+      setAdditionalGoodDeedsScore(newTotals.score);
+
+      const newTotalScore = mainGoodDeedsScore + newTotals.score - badDeedsScore;
+      if (newTotalScore >= nextLevelScore) {
+        setLevel((prevLevel) => prevLevel + 1);
+      }
+
+      return updatedCounters;
     });
-    setBadDeedsToday((prev) => prev + 1);
-    setBadDeedsScore((prev) => prev + deed.points);
-    setTotalScore((prev) => Math.max(0, prev - deed.points));
+  };
+
+  // Bad Deeds handler - follows same pattern but subtracts from total score
+  const handleBadDeed = (deed: Deed) => {
+    setBadDeedCounters((prev: { [key: string]: DeedCounter }) => {
+      const current = prev[deed.label] || { count: 0, totalPoints: 0 };
+      const newCount = current.count + 1;
+
+      if (newCount > deed.maxFrequency) {
+        const updatedCounters = {
+          ...prev,
+          [deed.label]: {
+            count: 0,
+            totalPoints: 0,
+          },
+        };
+
+        const newTotals = Object.values(updatedCounters).reduce(
+          (acc, deed) => ({
+            activity: acc.activity + deed.count,
+            score: acc.score + deed.totalPoints,
+          }),
+          { activity: 0, score: 0 }
+        );
+
+        setBadDeedsToday(newTotals.activity);
+        setBadDeedsScore(newTotals.score);
+
+        return updatedCounters;
+      }
+
+      const updatedCounters = {
+        ...prev,
+        [deed.label]: {
+          count: newCount,
+          totalPoints: current.totalPoints + deed.points,
+        },
+      };
+
+      const newTotals = Object.values(updatedCounters).reduce(
+        (acc, deed) => ({
+          activity: acc.activity + deed.count,
+          score: acc.score + deed.totalPoints,
+        }),
+        { activity: 0, score: 0 }
+      );
+
+      setBadDeedsToday(newTotals.activity);
+      setBadDeedsScore(newTotals.score);
+
+      return updatedCounters;
+    });
   };
 
   return (
@@ -192,24 +279,35 @@ const HomePage = () => {
         </div>
 
         <div className='text-center'>
-          <motion.div className='text-6xl font-bold text-white mb-2' animate={{ scale: [1, 1.1, 1] }} transition={{ duration: 0.5 }}>
+          {/* Animated score display using Framer Motion */}
+          <motion.div
+            className='text-6xl font-bold text-white mb-2'
+            animate={{ scale: [1, 1.1, 1] }} // Creates a pulsing animation
+            transition={{ duration: 0.5 }} // Animation duration
+          >
             {totalScore}
           </motion.div>
 
           {/* Level Progress Bar */}
           <div className='max-w-xs mx-auto mb-4'>
+            {/* Level and Score Display */}
             <div className='flex justify-between text-white/90 text-sm mb-1'>
               <span>Level {level}</span>
               <span>
                 {totalScore} / {nextLevelScore}
               </span>
             </div>
+            {/* Progress Bar Background */}
             <div className='w-full bg-white/30 rounded-full h-2'>
+              {/* Progress Bar Fill */}
               <div className='bg-white h-2 rounded-full transition-all duration-300' style={{ width: `${progressPercentage}%` }} />
             </div>
           </div>
 
+          {/* Level Title */}
           <div className='text-xl text-white/90 font-semibold mb-4'>Kindness Warrior Level {level}</div>
+
+          {/* Streak Counter */}
           <div className='flex items-center justify-center'>
             <FaFire className='text-orange-500 mr-2' />
             <span className='text-white'>{streak} Day Streak!</span>
@@ -217,20 +315,21 @@ const HomePage = () => {
         </div>
       </div>
 
-      {/* Deed Counters */}
+      {/* Main Content Container */}
       <div className='container mx-auto px-4 pt-20'>
+        {/* Deed Counters Grid */}
         <div className='grid grid-cols-3 gap-4 mb-6'>
-          {/* Main Good Deeds Counter */}
+          {/* Main Good Deeds Counter Card */}
           <div className='bg-white rounded-xl p-4 shadow-md text-center'>
             <div className='flex items-center justify-center mb-2'>
               <FaThumbsUp className='text-green-500 text-xl mr-2' />
               <span className='text-gray-800 font-semibold'>Main Good Deeds</span>
             </div>
-            <div className='text-3xl font-bold text-green-500'>{mainGoodDeedsToday}</div>
+            <div className='text-3xl font-bold text-green-500'>{mainGoodDeedsActivity}</div>
             <div className='text-m text-gray-600'>Total Score: +{mainGoodDeedsScore}</div>
           </div>
 
-          {/* Additional Good Deeds Counter */}
+          {/* Additional Good Deeds Counter Card */}
           <div className='bg-white rounded-xl p-4 shadow-md text-center'>
             <div className='flex items-center justify-center mb-2'>
               <FaThumbsUp className='text-blue-500 text-xl mr-2' />
@@ -240,7 +339,7 @@ const HomePage = () => {
             <div className='text-m text-gray-600'>Total Score: +{additionalGoodDeedsScore}</div>
           </div>
 
-          {/* Bad Deeds Counter */}
+          {/* Bad Deeds Counter Card */}
           <div className='bg-white rounded-xl p-4 shadow-md text-center'>
             <div className='flex items-center justify-center mb-2'>
               <FaThumbsDown className='text-red-500 text-xl mr-2' />
@@ -254,6 +353,7 @@ const HomePage = () => {
         {/* Achievement Section */}
         <div className='bg-white rounded-xl p-4 shadow-md mb-6'>
           <h2 className='text-gray-800 font-semibold mb-3'>Daily Achievements</h2>
+          {/* Horizontal scrollable achievement badges */}
           <div className='flex gap-2 overflow-x-auto'>
             {[1, 2, 3].map((badge) => (
               <div key={badge} className='bg-yellow-50 rounded-full p-2 w-12 h-12 flex items-center justify-center'>
@@ -263,10 +363,11 @@ const HomePage = () => {
           </div>
         </div>
 
-        {/* Actions Grid */}
+        {/* Actions Grid - Main and Additional Good Deeds */}
         <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-          {/* Main Good Deeds */}
+          {/* Main Good Deeds Section */}
           <div className='bg-white rounded-xl p-4 shadow-md'>
+            {/* Header with Progress */}
             <div className='flex justify-between items-center mb-3'>
               <h3 className='text-gray-800 font-semibold'>Main Good Deeds</h3>
               <span className='text-sm text-gray-600'>
@@ -274,22 +375,28 @@ const HomePage = () => {
               </span>
             </div>
 
+            {/* Progress Bar for Main Good Deeds */}
             <GradientProgressBar value={mainGoodDeedsScore} maxValue={maxPossibleMainGoodPoints} className='mb-4' />
 
+            {/* Main Good Deeds Buttons */}
             <div className='space-y-2'>
               {mainGoodDeedsList.map((deed) => {
+                // Get the counter for this specific deed, or use default values if none exists
                 const counter = mainGoodDeedCounters[deed.label] || { count: 0, totalPoints: 0 };
                 return (
                   <div key={deed.label} className='flex items-center gap-2'>
+                    {/* Deed Button */}
                     <button
                       onClick={() => handleGoodDeed(deed)}
                       className='flex-1 bg-green-500 hover:bg-green-600 text-white rounded-lg p-2 text-sm transition-colors'
                     >
                       {deed.label} | {deed.points}
                     </button>
+                    {/* Counter Display */}
                     <div className='w-16 text-center text-sm font-medium text-green-600 border border-green-200 rounded-lg p-2 shadow-sm'>
                       {counter.count} / {deed.maxFrequency}
                     </div>
+                    {/* Points Display */}
                     <div className='w-16 text-center text-sm font-medium text-green-600 border border-green-200 rounded-lg p-2 shadow-sm'>
                       +{counter.totalPoints}
                     </div>
@@ -299,8 +406,9 @@ const HomePage = () => {
             </div>
           </div>
 
-          {/* Additional Good Deeds */}
+          {/* Additional Good Deeds Section */}
           <div className='bg-white rounded-xl p-4 shadow-md'>
+            {/* Header with Progress */}
             <div className='flex justify-between items-center mb-3'>
               <h3 className='text-gray-800 font-semibold'>Additional Good Deeds</h3>
               <span className='text-sm text-gray-600'>
@@ -308,8 +416,10 @@ const HomePage = () => {
               </span>
             </div>
 
+            {/* Progress Bar for Additional Good Deeds */}
             <GradientProgressBar value={additionalGoodDeedsScore} maxValue={maxPossibleAdditionalGoodPoints} className='mb-4' />
 
+            {/* Additional Good Deeds Buttons */}
             <div className='space-y-2'>
               {additionalGoodDeedsList.map((deed) => {
                 const counter = additionalGoodDeedCounters[deed.label] || { count: 0, totalPoints: 0 };
@@ -334,9 +444,9 @@ const HomePage = () => {
           </div>
         </div>
 
-        {/* Additional Features */}
+        {/* Bottom Section - Bad Deeds and Daily Quote */}
         <div className='mt-6 grid grid-cols-1 md:grid-cols-2 gap-4'>
-          {/* Bad Deeds */}
+          {/* Bad Deeds Section */}
           <div className='bg-white rounded-xl p-4 shadow-md'>
             <h3 className='text-gray-800 font-semibold mb-3'>Bad Deeds</h3>
             <div className='space-y-2'>
@@ -361,7 +471,8 @@ const HomePage = () => {
               })}
             </div>
           </div>
-          {/* Daily Quote */}
+
+          {/* Daily Quote Section */}
           <div className='bg-white rounded-xl p-4 shadow-md'>
             <h3 className='text-gray-800 font-semibold mb-2'>Daily Wisdom</h3>
             <p className='text-gray-600 text-sm italic'>Kindness is a language which the deaf can hear and the blind can see.</p>
