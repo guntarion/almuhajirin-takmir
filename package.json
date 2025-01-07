@@ -11,7 +11,8 @@
     "lint": "next lint",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "test": "vitest"
   },
   "prisma": {
     "seed": "node --loader ts-node/esm prisma/seed_2.ts"
@@ -54,7 +55,7 @@
     "@eslint/eslintrc": "^3",
     "@types/draft-js": "^0.11.18",
     "@types/next-pwa": "^5.6.9",
-    "@types/node": "^20.17.11",
+    "@types/node": "^20.17.12",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/sqlite3": "^3.1.11",
@@ -64,6 +65,7 @@
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
     "ts-node": "^10.9.2",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
   }
 }

@@ -60,9 +60,7 @@ const HomePage = () => {
   ];
 
   const maxPossibleMainGoodPoints = mainGoodDeedsList.reduce((total: number, deed) => total + deed.points * deed.maxFrequency, 0);
-  console.log('🚀 ~ HomePage ~ maxPossibleMainGoodPoints:', maxPossibleMainGoodPoints);
   const maxPossibleAdditionalGoodPoints = additionalGoodDeedsList.reduce((total: number, deed) => total + deed.points * deed.maxFrequency, 0);
-  console.log('🚀 ~ HomePage ~ maxPossibleAdditionalGoodPoints:', maxPossibleAdditionalGoodPoints);
 
   // Calculate progress percentage
   const progressPercentage = ((totalScore - level * 100) / ((level + 1) * 100 - level * 100)) * 100;
@@ -73,14 +71,14 @@ const HomePage = () => {
   };
 
   const handleGoodDeed = (deed: Deed) => {
-    setMainGoodDeedCounters((prev) => {
+    setMainGoodDeedCounters((prev: { [key: string]: DeedCounter }) => {
       const current = prev[deed.label] || { count: 0, totalPoints: 0 };
       const newCount = current.count + 1;
+
       if (newCount > deed.maxFrequency) {
-        // Decrease the total counts and scores
-        setMainGoodDeedsToday((prevTotal) => prevTotal - current.count);
-        setMainGoodDeedsScore((prevScore) => prevScore - current.totalPoints);
-        setTotalScore((prevScore) => Math.max(0, prevScore - current.totalPoints));
+        // Reset counters
+        setMainGoodDeedsToday(() => 0);
+        setMainGoodDeedsScore(() => 0);
         return {
           ...prev,
           [deed.label]: {
@@ -90,26 +88,30 @@ const HomePage = () => {
         };
       }
 
-      setTotalScore((prev) => {
-        const newScore = prev + deed.points;
-        if (newScore >= nextLevelScore) {
-          setLevel((prevLevel) => prevLevel + 1);
-          return 0;
-        }
-        return newScore;
-      });
+      // Normal increment
+      setMainGoodDeedsToday(() => newCount);
+      setMainGoodDeedsScore(() => newCount * deed.points);
+
       return {
         ...prev,
         [deed.label]: {
           count: newCount,
-          totalPoints: current.totalPoints + deed.points,
+          totalPoints: newCount * deed.points,
         },
       };
     });
-    setMainGoodDeedsToday((prev) => prev + 1);
-    setMainGoodDeedsScore((prev) => prev + deed.points);
-    setTotalScore((prevScore) => Math.max(0, prevScore - deed.points));
+
+    // Handle total score and leveling up
+    setTotalScore((prev: number) => {
+      const newScore = prev + deed.points;
+      if (newScore >= nextLevelScore) {
+        setLevel((prevLevel: number) => prevLevel + 1);
+        return 0;
+      }
+      return newScore;
+    });
   };
+
   const handleAdditionalGoodDeed = (deed: Deed) => {
     setAdditionalGoodDeedCounters((prev) => {
       const current = prev[deed.label] || { count: 0, totalPoints: 0 };
@@ -246,6 +248,18 @@ const HomePage = () => {
             </div>
             <div className='text-3xl font-bold text-red-500'>{badDeedsToday}</div>
             <div className='text-m text-gray-600'>Total Score: -{badDeedsScore}</div>
+          </div>
+        </div>
+
+        {/* Achievement Section */}
+        <div className='bg-white rounded-xl p-4 shadow-md mb-6'>
+          <h2 className='text-gray-800 font-semibold mb-3'>Daily Achievements</h2>
+          <div className='flex gap-2 overflow-x-auto'>
+            {[1, 2, 3].map((badge) => (
+              <div key={badge} className='bg-yellow-50 rounded-full p-2 w-12 h-12 flex items-center justify-center'>
+                <FaMedal className='text-yellow-500' />
+              </div>
+            ))}
           </div>
         </div>
 
