@@ -104,7 +104,13 @@ export default function RootLayout({
                       <Link href='/admin/aktivitas' className='flex items-center p-2 rounded-lg hover:bg-gray-700'>
                         <span className='flex items-center'>
                           <List className='w-5 h-5 mr-2' /> {/* Updated icon */}
-                          <span>Aktivitas</span>
+                          <span>Entri Tindakan</span>
+                        </span>
+                      </Link>
+                      <Link href='/admin/daftar-tindakan' className='flex items-center p-2 rounded-lg hover:bg-gray-700'>
+                        <span className='flex items-center'>
+                          <List className='w-5 h-5 mr-2' /> {/* Updated icon */}
+                          <span>List Tindakan</span>
                         </span>
                       </Link>
                       <Link href='/admin//assignment' className='flex items-center p-2 rounded-lg hover:bg-gray-700'>

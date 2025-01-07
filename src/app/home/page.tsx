@@ -1,7 +1,8 @@
+// src/app/home/page.tsx
 'use client';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { FaFire, FaTrophy, FaMedal, FaThumbsUp, FaThumbsDown } from 'react-icons/fa';
+import { FaFire, FaMedal, FaThumbsUp, FaThumbsDown, FaLeaf, FaStar, FaGem, FaAward } from 'react-icons/fa';
 import Image from 'next/image';
 import GradientProgressBar from '@/components/ui/gradient-progress-bar';
 
@@ -19,6 +20,7 @@ interface DeedCounter {
 const HomePage = () => {
   // Level and streak states
   const [level, setLevel] = useState(3);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [streak, setStreak] = useState(7);
   const nextLevelScore = 375;
   const userName = 'Muhajirin Kids';
@@ -29,12 +31,12 @@ const HomePage = () => {
   const [mainGoodDeedCounters, setMainGoodDeedCounters] = useState<{ [key: string]: DeedCounter }>({});
 
   // Additional Good Deeds states
-  const [additionalGoodDeedsNow, setAdditionalGoodDeedsNow] = useState(0);
+  const [additionalGoodDeedsActivity, setAdditionalGoodDeedsActivity] = useState(0);
   const [additionalGoodDeedsScore, setAdditionalGoodDeedsScore] = useState(0);
   const [additionalGoodDeedCounters, setAdditionalGoodDeedCounters] = useState<{ [key: string]: DeedCounter }>({});
 
   // Bad Deeds states
-  const [badDeedsToday, setBadDeedsToday] = useState(0);
+  const [badDeedsActivity, setBadDeedsActivity] = useState(0);
   const [badDeedsScore, setBadDeedsScore] = useState(0);
   const [badDeedCounters, setBadDeedCounters] = useState<{ [key: string]: DeedCounter }>({});
 
@@ -175,7 +177,7 @@ const HomePage = () => {
           { activity: 0, score: 0 }
         );
 
-        setAdditionalGoodDeedsNow(newTotals.activity);
+        setAdditionalGoodDeedsActivity(newTotals.activity);
         setAdditionalGoodDeedsScore(newTotals.score);
 
         const newTotalScore = mainGoodDeedsScore + newTotals.score - badDeedsScore;
@@ -202,7 +204,7 @@ const HomePage = () => {
         { activity: 0, score: 0 }
       );
 
-      setAdditionalGoodDeedsNow(newTotals.activity);
+      setAdditionalGoodDeedsActivity(newTotals.activity);
       setAdditionalGoodDeedsScore(newTotals.score);
 
       const newTotalScore = mainGoodDeedsScore + newTotals.score - badDeedsScore;
@@ -237,7 +239,7 @@ const HomePage = () => {
           { activity: 0, score: 0 }
         );
 
-        setBadDeedsToday(newTotals.activity);
+        setBadDeedsActivity(newTotals.activity);
         setBadDeedsScore(newTotals.score);
 
         return updatedCounters;
@@ -259,7 +261,7 @@ const HomePage = () => {
         { activity: 0, score: 0 }
       );
 
-      setBadDeedsToday(newTotals.activity);
+      setBadDeedsActivity(newTotals.activity);
       setBadDeedsScore(newTotals.score);
 
       return updatedCounters;
@@ -335,7 +337,7 @@ const HomePage = () => {
               <FaThumbsUp className='text-blue-500 text-xl mr-2' />
               <span className='text-gray-800 font-semibold'>Additional Good Deeds</span>
             </div>
-            <div className='text-3xl font-bold text-blue-500'>{additionalGoodDeedsNow}</div>
+            <div className='text-3xl font-bold text-blue-500'>{additionalGoodDeedsActivity}</div>
             <div className='text-m text-gray-600'>Total Score: +{additionalGoodDeedsScore}</div>
           </div>
 
@@ -345,21 +347,77 @@ const HomePage = () => {
               <FaThumbsDown className='text-red-500 text-xl mr-2' />
               <span className='text-gray-800 font-semibold'>Bad Deeds</span>
             </div>
-            <div className='text-3xl font-bold text-red-500'>{badDeedsToday}</div>
+            <div className='text-3xl font-bold text-red-500'>{badDeedsActivity}</div>
             <div className='text-m text-gray-600'>Total Score: -{badDeedsScore}</div>
           </div>
         </div>
 
         {/* Achievement Section */}
-        <div className='bg-white rounded-xl p-4 shadow-md mb-6'>
+        <div className='bg-white rounded-xl p-4 shadow-md mb-6 text-center'>
           <h2 className='text-gray-800 font-semibold mb-3'>Daily Achievements</h2>
-          {/* Horizontal scrollable achievement badges */}
-          <div className='flex gap-2 overflow-x-auto'>
-            {[1, 2, 3].map((badge) => (
-              <div key={badge} className='bg-yellow-50 rounded-full p-2 w-12 h-12 flex items-center justify-center'>
-                <FaMedal className='text-yellow-500' />
-              </div>
-            ))}
+          <div className='flex justify-between items-center px-4'>
+            {/* Left section - Main Good Deeds */}
+            <div className='flex gap-2 justify-center flex-1'>
+              {(() => {
+                const percentage = (mainGoodDeedsScore / maxPossibleMainGoodPoints) * 100;
+
+                // 1-30%: FaLeaf icons
+                if (percentage >= 1 && percentage <= 30) {
+                  const count = percentage <= 10 ? 1 : percentage <= 20 ? 2 : 3;
+                  return Array.from({ length: count }).map((_, i) => <FaLeaf key={i} className='w-10 h-10 text-green-500' />);
+                }
+
+                // 31-60%: Bronze medals
+                if (percentage >= 31 && percentage <= 60) {
+                  const count = percentage <= 40 ? 1 : percentage <= 50 ? 2 : 3;
+                  return Array.from({ length: count }).map((_, i) => <FaMedal key={i} className='w-10 h-10 text-bronze' />);
+                }
+
+                // 61-90%: Silver medals
+                if (percentage >= 61 && percentage <= 90) {
+                  const count = percentage <= 70 ? 1 : percentage <= 80 ? 2 : 3;
+                  return Array.from({ length: count }).map((_, i) => <FaMedal key={i} className='w-10 h-10 text-silver' />);
+                }
+
+                // 91-100%: Gold medals
+                if (percentage >= 91) {
+                  const count = percentage <= 95 ? 1 : percentage <= 99 ? 2 : 3;
+                  return Array.from({ length: count }).map((_, i) => <FaMedal key={i} className='w-10 h-10 text-gold' />);
+                }
+
+                return <div className='w-10 h-10' />; // Empty placeholder to maintain spacing
+              })()}
+            </div>
+
+            {/* Middle section - Additional Good Deeds Stars */}
+            <div className='flex items-center gap-2 justify-center flex-1'>
+              {additionalGoodDeedsActivity > 0 && (
+                <>
+                  <FaStar className='w-8 h-8 text-yellow-400' />
+                  <span className='text-lg font-medium'>{additionalGoodDeedsActivity}x</span>
+                </>
+              )}
+            </div>
+
+            {/* Right section - Gems and Awards */}
+            <div className='flex gap-2 justify-center flex-1'>
+              {badDeedsActivity === 0 &&
+                additionalGoodDeedsActivity > 0 &&
+                (() => {
+                  const additionalPercentage = (additionalGoodDeedsScore / maxPossibleAdditionalGoodPoints) * 100;
+
+                  if (additionalPercentage >= 100) {
+                    return <FaAward className='w-10 h-10 text-blue-500' />;
+                  }
+
+                  if (additionalPercentage >= 20) {
+                    const count = additionalPercentage <= 50 ? 1 : additionalPercentage <= 80 ? 2 : 3;
+                    return Array.from({ length: count }).map((_, i) => <FaGem key={i} className='w-10 h-10 text-blue-400' />);
+                  }
+
+                  return null;
+                })()}
+            </div>
           </div>
         </div>
 
