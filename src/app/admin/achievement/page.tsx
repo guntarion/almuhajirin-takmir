@@ -1,12 +1,15 @@
+'use client';
 // src/app/admin/achievement/page.tsx
+import { useState } from 'react';
+import { rankData, levelData } from '@/lib/constants/achievement';
 import {
-  // FaMedal,
-  // FaTrophy,
+  FaMedal,
+  FaTrophy,
   FaAward,
-  // FaStar,
+  FaStar,
   FaCrown,
   FaRibbon,
-  // FaShieldAlt,
+  FaShieldAlt,
   FaGem,
   FaCertificate,
   FaFlagCheckered,
@@ -48,10 +51,6 @@ import {
   FaCalendarAlt,
   FaBell,
   FaMagic,
-  FaMedal,
-  FaStar,
-  FaShieldAlt,
-  FaTrophy,
 } from 'react-icons/fa';
 
 const icons = [
@@ -106,51 +105,98 @@ const icons = [
 ];
 
 export default function AchievementPage() {
+  const [activeTab, setActiveTab] = useState<'Level' | 'Rank' | 'Icons'>('Level');
+
   return (
     <div className='p-4'>
-      <h1 className='text-2xl font-bold'>Achievement Icons</h1>
-      <p className='mt-4'>Here are all the icons you can use for gamification in your habit-tracking app:</p>
-      <div className='mt-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6'>
-        {icons.map(({ icon: Icon, name, purpose }, index) => (
-          <div key={index} className='flex flex-col items-center p-4 border rounded-lg shadow-sm'>
-            <Icon className='w-12 h-12 mb-2 text-blue-500' />
-            <h3 className='font-semibold text-lg'>{name}</h3>
-            <p className='text-sm text-center text-gray-600'>{purpose}</p>
-          </div>
-        ))}
+      <h1 className='text-2xl font-bold'>Achievement Dashboard</h1>
+      <div className='flex space-x-4 mt-4 border-b'>
+        <button
+          onClick={() => setActiveTab('Level')}
+          className={`py-2 px-4 ${activeTab === 'Level' ? 'border-b-2 border-blue-500 font-semibold' : 'text-gray-500'}`}
+        >
+          Level
+        </button>
+        <button
+          onClick={() => setActiveTab('Rank')}
+          className={`py-2 px-4 ${activeTab === 'Rank' ? 'border-b-2 border-blue-500 font-semibold' : 'text-gray-500'}`}
+        >
+          Rank
+        </button>
+        <button
+          onClick={() => setActiveTab('Icons')}
+          className={`py-2 px-4 ${activeTab === 'Icons' ? 'border-b-2 border-blue-500 font-semibold' : 'text-gray-500'}`}
+        >
+          Icons
+        </button>
       </div>
 
-      <h1 className='text-2xl font-bold'>Medal Icons</h1>
-      <div className='mt-6 grid grid-cols-1 sm:grid-cols-3 gap-6'>
-        <div className='mt-6 grid grid-cols-1 sm:grid-cols-3 gap-6'>
-          {/* Bronze Medal */}
-          <div className='flex flex-col items-center p-4 border rounded-lg shadow-sm'>
-            <div className='w-16 h-16 rounded-full bg-bronze-100 flex items-center justify-center mb-2'>
-              <FaMedal className='w-12 h-12 text-bronze' />
-            </div>
-            <h3 className='font-semibold text-lg'>Bronze Medal</h3>
-            <p className='text-sm text-center text-gray-600'>Achievement: Beginner Level</p>
-          </div>
-
-          {/* Silver Medal */}
-          <div className='flex flex-col items-center p-4 border rounded-lg shadow-sm'>
-            <div className='w-16 h-16 rounded-full bg-silver-100 flex items-center justify-center mb-2'>
-              <FaMedal className='w-12 h-12 text-silver' />
-            </div>
-            <h3 className='font-semibold text-lg'>Silver Medal</h3>
-            <p className='text-sm text-center text-gray-600'>Achievement: Intermediate Level</p>
-          </div>
-
-          {/* Gold Medal */}
-          <div className='flex flex-col items-center p-4 border rounded-lg shadow-sm'>
-            <div className='w-16 h-16 rounded-full bg-gold-100 flex items-center justify-center mb-2'>
-              <FaMedal className='w-12 h-12 text-gold' />
-            </div>
-            <h3 className='font-semibold text-lg'>Gold Medal</h3>
-            <p className='text-sm text-center text-gray-600'>Achievement: Advanced Level</p>
+      {activeTab === 'Level' && (
+        <div className='mt-6'>
+          <h2 className='text-xl font-bold'>Level</h2>
+          <div className='mt-4'>
+            <table className='w-full border-collapse'>
+              <thead>
+                <tr className='bg-gray-100'>
+                  <th className='p-2 border'>Level</th>
+                  <th className='p-2 border'>Start Range</th>
+                  <th className='p-2 border'>End Range</th>
+                </tr>
+              </thead>
+              <tbody>
+                {levelData.map(({ level, startRange, endRange }, index) => (
+                  <tr key={index} className='hover:bg-gray-50'>
+                    <td className='p-2 border text-center'>{level}</td>
+                    <td className='p-2 border text-center'>{startRange}</td>
+                    <td className='p-2 border text-center'>{endRange}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
-      </div>
+      )}
+
+      {activeTab === 'Rank' && (
+        <div className='mt-6'>
+          <h2 className='text-xl font-bold'>Rank</h2>
+          <div className='mt-4'>
+            <table className='w-full border-collapse'>
+              <thead>
+                <tr className='bg-gray-100'>
+                  <th className='p-2 border'>Rank</th>
+                  <th className='p-2 border'>Start Range</th>
+                  <th className='p-2 border'>End Range</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rankData.map(({ rank, startRange, endRange }, index) => (
+                  <tr key={index} className='hover:bg-gray-50'>
+                    <td className='p-2 border text-center'>{rank}</td>
+                    <td className='p-2 border text-center'>{startRange}</td>
+                    <td className='p-2 border text-center'>{endRange}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'Icons' && (
+        <div className='mt-6'>
+          <h2 className='text-xl font-bold'>Icons</h2>
+          <div className='mt-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6'>
+            {icons.map(({ icon: Icon, name, purpose }, index) => (
+              <div key={index} className='flex flex-col items-center p-4 border rounded-lg shadow-sm'>
+                <Icon className='w-12 h-12 mb-2 text-blue-500' />
+                <h3 className='font-semibold text-lg'>{name}</h3>
+                <p className='text-sm text-center text-gray-600'>{purpose}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

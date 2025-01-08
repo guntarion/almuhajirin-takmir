@@ -1,3 +1,4 @@
+// tailwind.config.ts
 import type { Config } from 'tailwindcss';
 
 export default {
@@ -10,6 +11,9 @@ export default {
         bronze: '#CD7F32',
         silver: '#C0C0C0',
         gold: '#FFD700',
+      },
+      animation: {
+        'bounce-slow': 'bounce 2s infinite',
       },
     },
   },

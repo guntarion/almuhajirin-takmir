@@ -32,3 +32,25 @@ body {
   background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Custom CSS */
+.hover-effect:hover {
+  transform: translateY(-2px);
+  transition: transform 0.2s;
+}
+
+.top-three-badge {
+  position: relative;
+}
+
+.top-three-badge::after {
+  content: '';
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: var(--gold); /* Use Tailwind's gold color */
+  border: 2px solid white;
+}

@@ -2,7 +2,29 @@
 'use client';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { FaFire, FaMedal, FaThumbsUp, FaThumbsDown, FaLeaf, FaStar, FaGem, FaAward } from 'react-icons/fa';
+import {
+  FaFire,
+  FaMedal,
+  FaThumbsUp,
+  FaThumbsDown,
+  FaLeaf,
+  FaStar,
+  FaGem,
+  FaAward,
+  FaCloudSun,
+  FaTint,
+  FaAlignJustify,
+  FaPrayingHands,
+  FaPray,
+  FaClock,
+  FaMicrophone,
+  FaBookReader,
+  FaHandHoldingHeart,
+  FaRunning,
+  FaTshirt,
+  FaTrash,
+  FaUserLock,
+} from 'react-icons/fa';
 import Image from 'next/image';
 import GradientProgressBar from '@/components/ui/gradient-progress-bar';
 
@@ -10,6 +32,8 @@ interface Deed {
   label: string;
   points: number;
   maxFrequency: number;
+  icon?: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  description?: string;
 }
 
 interface DeedCounter {
@@ -42,26 +66,117 @@ const HomePage = () => {
 
   // Deed lists
   const mainGoodDeedsList: Deed[] = [
-    { label: 'Help Someone', points: 10, maxFrequency: 4 },
-    { label: 'Complete Homework', points: 15, maxFrequency: 3 },
-    { label: 'Clean Room', points: 12, maxFrequency: 2 },
-    { label: 'Share with Others', points: 8, maxFrequency: 5 },
-    { label: 'Exercise', points: 10, maxFrequency: 3 },
+    {
+      label: 'Maghrib Berjamaah',
+      points: 25,
+      maxFrequency: 1,
+      icon: FaCloudSun,
+      description: 'Sholat Maghrib berjamaah di masjid.',
+    },
+    {
+      label: 'Isya Berjamaah',
+      points: 25,
+      maxFrequency: 1,
+      icon: FaStar,
+      description: 'Sholat Isya berjamaah di masjid.',
+    },
+    {
+      label: 'Jaga Wudhu',
+      points: 5,
+      maxFrequency: 3,
+      icon: FaTint,
+      description: 'Selalu siap dengan wudhu.',
+    },
+    {
+      label: 'Rapikan Shaf',
+      points: 5,
+      maxFrequency: 3,
+      icon: FaAlignJustify,
+      description: 'Merapikan barisan sholat.',
+    },
+    {
+      label: 'Dzikir/Doa',
+      points: 10,
+      maxFrequency: 3,
+      icon: FaPrayingHands,
+      description: 'Berdoa atau berdzikir setelah sholat.',
+    },
   ];
 
   const additionalGoodDeedsList: Deed[] = [
-    { label: 'Read Books', points: 8, maxFrequency: 3 },
-    { label: 'Practice Music', points: 10, maxFrequency: 2 },
-    { label: 'Help Parents', points: 12, maxFrequency: 4 },
-    { label: 'Learn New Skill', points: 15, maxFrequency: 2 },
-    { label: 'Organize Space', points: 8, maxFrequency: 3 },
+    {
+      label: 'Shubuh Berjamaah',
+      points: 25,
+      maxFrequency: 1,
+      icon: FaPray,
+      description: 'Sholat Shubuh berjamaah di masjid.',
+    },
+    {
+      label: 'Rawatib',
+      points: 15,
+      maxFrequency: 3,
+      icon: FaClock,
+      description: 'Sholat sunnah sebelum/sesudah sholat wajib.',
+    },
+    {
+      label: 'Adzan/Iqomah',
+      points: 10,
+      maxFrequency: 3,
+      icon: FaMicrophone,
+      description: 'Mengumandangkan adzan atau iqomah.',
+    },
+    {
+      label: 'Belajar di Masjid',
+      points: 10,
+      maxFrequency: 1,
+      icon: FaBookReader,
+      description: 'Belajar atau mengaji di masjid.',
+    },
+    {
+      label: 'Bersedekah',
+      points: 10,
+      maxFrequency: 1,
+      icon: FaHandHoldingHeart,
+      description: 'Memberi sedekah untuk masjid.',
+    },
   ];
 
   const badDeedsList: Deed[] = [
-    { label: 'Fighting', points: 20, maxFrequency: 3 },
-    { label: 'Lying', points: 15, maxFrequency: 3 },
-    { label: 'Breaking Rules', points: 12, maxFrequency: 4 },
-    { label: 'Being Mean', points: 10, maxFrequency: 4 },
+    {
+      label: 'Terlambat Sholat',
+      points: -5,
+      maxFrequency: 3,
+      icon: FaClock,
+      description: 'Datang terlambat untuk sholat berjamaah.',
+    },
+    {
+      label: 'Lari di Masjid',
+      points: -5,
+      maxFrequency: 3,
+      icon: FaRunning,
+      description: 'Membuat keributan di dalam masjid.',
+    },
+    {
+      label: 'Aurat Terbuka',
+      points: -10,
+      maxFrequency: 3,
+      icon: FaTshirt,
+      description: 'Memakai pakaian yang tidak sesuai dengan syariat.',
+    },
+    {
+      label: 'Kotori Masjid',
+      points: -5,
+      maxFrequency: 3,
+      icon: FaTrash,
+      description: 'Membuat area masjid menjadi kotor.',
+    },
+    {
+      label: 'Tidak Hormati Petugas',
+      points: -10,
+      maxFrequency: 3,
+      icon: FaUserLock,
+      description: 'Bersikap tidak sopan kepada petugas masjid.',
+    },
   ];
 
   // Calculate maximum possible points
@@ -307,11 +422,11 @@ const HomePage = () => {
           </div>
 
           {/* Level Title */}
-          <div className='text-xl text-white/90 font-semibold mb-4'>Kindness Warrior Level {level}</div>
+          <div className='text-xl text-white/90 font-semibold mb-4'>Kopral Level {level}</div>
 
           {/* Streak Counter */}
           <div className='flex items-center justify-center'>
-            <FaFire className='text-orange-500 mr-2' />
+            <FaFire className='text-white-500 mr-2' />
             <span className='text-white'>{streak} Day Streak!</span>
           </div>
         </div>
@@ -325,30 +440,30 @@ const HomePage = () => {
           <div className='bg-white rounded-xl p-4 shadow-md text-center'>
             <div className='flex items-center justify-center mb-2'>
               <FaThumbsUp className='text-green-500 text-xl mr-2' />
-              <span className='text-gray-800 font-semibold'>Main Good Deeds</span>
+              <span className='text-gray-800 font-semibold'>Al-Wajibat</span>
             </div>
             <div className='text-3xl font-bold text-green-500'>{mainGoodDeedsActivity}</div>
-            <div className='text-m text-gray-600'>Total Score: +{mainGoodDeedsScore}</div>
+            <div className='text-m text-gray-600'>Σ Hasanat: +{mainGoodDeedsScore}</div>
           </div>
 
           {/* Additional Good Deeds Counter Card */}
           <div className='bg-white rounded-xl p-4 shadow-md text-center'>
             <div className='flex items-center justify-center mb-2'>
               <FaThumbsUp className='text-blue-500 text-xl mr-2' />
-              <span className='text-gray-800 font-semibold'>Additional Good Deeds</span>
+              <span className='text-gray-800 font-semibold'>Al-Mandubat</span>
             </div>
             <div className='text-3xl font-bold text-blue-500'>{additionalGoodDeedsActivity}</div>
-            <div className='text-m text-gray-600'>Total Score: +{additionalGoodDeedsScore}</div>
+            <div className='text-m text-gray-600'>Σ Hasanat: +{additionalGoodDeedsScore}</div>
           </div>
 
           {/* Bad Deeds Counter Card */}
           <div className='bg-white rounded-xl p-4 shadow-md text-center'>
             <div className='flex items-center justify-center mb-2'>
               <FaThumbsDown className='text-red-500 text-xl mr-2' />
-              <span className='text-gray-800 font-semibold'>Bad Deeds</span>
+              <span className='text-gray-800 font-semibold'>Al-Mahzurat</span>
             </div>
             <div className='text-3xl font-bold text-red-500'>{badDeedsActivity}</div>
-            <div className='text-m text-gray-600'>Total Score: -{badDeedsScore}</div>
+            <div className='text-m text-gray-600'>Σ Sayyiat: -{badDeedsScore}</div>
           </div>
         </div>
 
@@ -427,9 +542,9 @@ const HomePage = () => {
           <div className='bg-white rounded-xl p-4 shadow-md'>
             {/* Header with Progress */}
             <div className='flex justify-between items-center mb-3'>
-              <h3 className='text-gray-800 font-semibold'>Main Good Deeds</h3>
+              <h3 className='text-gray-800 font-semibold'>Al-Wajibat</h3>
               <span className='text-sm text-gray-600'>
-                {mainGoodDeedsScore} / {maxPossibleMainGoodPoints} points
+                {mainGoodDeedsScore} / {maxPossibleMainGoodPoints} poin
               </span>
             </div>
 
@@ -439,22 +554,21 @@ const HomePage = () => {
             {/* Main Good Deeds Buttons */}
             <div className='space-y-2'>
               {mainGoodDeedsList.map((deed) => {
-                // Get the counter for this specific deed, or use default values if none exists
                 const counter = mainGoodDeedCounters[deed.label] || { count: 0, totalPoints: 0 };
                 return (
                   <div key={deed.label} className='flex items-center gap-2'>
-                    {/* Deed Button */}
                     <button
                       onClick={() => handleGoodDeed(deed)}
-                      className='flex-1 bg-green-500 hover:bg-green-600 text-white rounded-lg p-2 text-sm transition-colors'
+                      className='flex-1 bg-green-500 hover:bg-green-600 text-white rounded-lg p-2 text-sm transition-colors flex items-center justify-end gap-2 pr-3'
                     >
-                      {deed.label} | {deed.points}
+                      <span>
+                        {deed.label} | {deed.points}
+                      </span>
+                      {deed.icon && <deed.icon className='text-white' />}
                     </button>
-                    {/* Counter Display */}
                     <div className='w-16 text-center text-sm font-medium text-green-600 border border-green-200 rounded-lg p-2 shadow-sm'>
                       {counter.count} / {deed.maxFrequency}
                     </div>
-                    {/* Points Display */}
                     <div className='w-16 text-center text-sm font-medium text-green-600 border border-green-200 rounded-lg p-2 shadow-sm'>
                       +{counter.totalPoints}
                     </div>
@@ -468,9 +582,9 @@ const HomePage = () => {
           <div className='bg-white rounded-xl p-4 shadow-md'>
             {/* Header with Progress */}
             <div className='flex justify-between items-center mb-3'>
-              <h3 className='text-gray-800 font-semibold'>Additional Good Deeds</h3>
+              <h3 className='text-gray-800 font-semibold'>Al-Mandubat</h3>
               <span className='text-sm text-gray-600'>
-                {additionalGoodDeedsScore} / {maxPossibleAdditionalGoodPoints} points
+                {additionalGoodDeedsScore} / {maxPossibleAdditionalGoodPoints} poin
               </span>
             </div>
 
@@ -485,9 +599,12 @@ const HomePage = () => {
                   <div key={deed.label} className='flex items-center gap-2'>
                     <button
                       onClick={() => handleAdditionalGoodDeed(deed)}
-                      className='flex-1 bg-blue-500 hover:bg-blue-600 text-white rounded-lg p-2 text-sm transition-colors'
+                      className='flex-1 bg-blue-500 hover:bg-blue-600 text-white rounded-lg p-2 text-sm transition-colors flex items-center justify-end gap-2 pr-3'
                     >
-                      {deed.label} | {deed.points}
+                      <span>
+                        {deed.label} | {deed.points}
+                      </span>
+                      {deed.icon && <deed.icon className='text-white' />}
                     </button>
                     <div className='w-16 text-center text-sm font-medium text-blue-600 border border-blue-200 rounded-lg p-2 shadow-sm'>
                       {counter.count} / {deed.maxFrequency}
@@ -506,7 +623,7 @@ const HomePage = () => {
         <div className='mt-6 grid grid-cols-1 md:grid-cols-2 gap-4'>
           {/* Bad Deeds Section */}
           <div className='bg-white rounded-xl p-4 shadow-md'>
-            <h3 className='text-gray-800 font-semibold mb-3'>Bad Deeds</h3>
+            <h3 className='text-gray-800 font-semibold mb-3'>Al-Mahzurat</h3>
             <div className='space-y-2'>
               {badDeedsList.map((deed) => {
                 const counter = badDeedCounters[deed.label] || { count: 0, totalPoints: 0 };
@@ -514,9 +631,12 @@ const HomePage = () => {
                   <div key={deed.label} className='flex items-center gap-2'>
                     <button
                       onClick={() => handleBadDeed(deed)}
-                      className='flex-1 bg-red-500 hover:bg-red-600 text-white rounded-lg p-2 text-sm transition-colors'
+                      className='flex-1 bg-red-500 hover:bg-red-600 text-white rounded-lg p-2 text-sm transition-colors flex items-center justify-end gap-2 pr-3'
                     >
-                      {deed.label} | {deed.points}
+                      <span>
+                        {deed.label} | {deed.points}
+                      </span>
+                      {deed.icon && <deed.icon className='text-white' />}
                     </button>
                     <div className='w-16 text-center text-sm font-medium text-red-600 border border-red-200 rounded-lg p-2 shadow-sm'>
                       {counter.count} / {deed.maxFrequency}

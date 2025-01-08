@@ -1,4 +1,3 @@
-.
 ./middleware.ts
 ./app
 ./app/home
@@ -18,6 +17,8 @@
 ./app/admin/achievement/page.tsx
 ./app/admin/assignment
 ./app/admin/assignment/page.tsx
+./app/admin/daftar-tindakan
+./app/admin/daftar-tindakan/page.tsx
 ./app/admin/aktivitas
 ./app/admin/aktivitas/page.tsx
 ./app/admin/kelola-user
@@ -71,6 +72,7 @@
 ./components/ui
 ./components/ui/pagination.tsx
 ./components/ui/form-components.tsx
+./components/ui/gradient-progress-bar.tsx
 ./components/ui/table.tsx
 ./components/ui/button.tsx
 ./components/ui/checkbox.tsx
@@ -86,6 +88,7 @@
 ./components/auth/Providers.tsx
 ./components/aktivitas
 ./components/aktivitas/activity-form.tsx
+./components/__tests__
 ./components/bbs
 ./components/bbs/PostDetail.tsx
 ./components/bbs/EditPostForm.tsx
