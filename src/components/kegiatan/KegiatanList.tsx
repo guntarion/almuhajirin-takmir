@@ -15,7 +15,12 @@ export default function KegiatanList({ kegiatanList }: KegiatanListProps) {
           <Link href={`/kegiatan/${kegiatan.id}`}>
             {/* <img src={kegiatan.imageUrl} alt={kegiatan.title} className='w-full h-48 object-cover' /> */}
             <div className='p-6'>
-              <h2 className='text-xl font-semibold text-gray-900'>{kegiatan.title}</h2>
+              <div className='flex items-center justify-between'>
+                <h2 className='text-xl font-semibold text-gray-900'>{kegiatan.title}</h2>
+                {kegiatan.status === 'UPCOMING' && (
+                  <span className='bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-semibold'>UPCOMING</span>
+                )}
+              </div>
               <p className='text-gray-600 mt-2'>{kegiatan.description}</p>
               <div className='mt-4 text-sm text-gray-500'>
                 <p>Tanggal: {new Date(kegiatan.date).toLocaleDateString('id-ID')}</p>
