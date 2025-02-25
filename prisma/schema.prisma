@@ -1,12 +1,14 @@
-generator client {
-  provider = "prisma-client-js"
-}
-
 datasource db {
-  provider = "sqlite"
-  url      = "file:./../data/databasemuhajirin.db"
+  provider = "mysql"
+  url      = env("DATABASE_URL")
 }
 
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["referentialActions"]
+}
+
+// Models
 model Post {
   id          String      @id @default(cuid())
   title       String
@@ -127,6 +129,7 @@ model User {
   bookmarks     Bookmark[]
   notifications Notification[]
   postViews     PostView[]
+  activities    UserActivity[]
   orangTuaAnakRemasAsOrangTua    OrangTuaAnakRemas[] @relation("orangTua")
   orangTuaAnakRemasAsAnakRemas   OrangTuaAnakRemas[] @relation("anakRemas")
 
@@ -159,4 +162,18 @@ model PostView {
   @@index([postId])
   @@index([userId])
   @@map("post_views")
+}
+
+model UserActivity {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  type      String   // LOGIN, POST_CREATE, COMMENT, etc.
+  metadata  String?  @db.Text  // JSON string containing url, method, userAgent
+  date      DateTime @default(now())
+
+  @@index([userId])
+  @@index([type])
+  @@index([date])
+  @@map("user_activities")
 }

@@ -1,5 +1,5 @@
 // scripts/test-db-connection.ts
-import postgres from 'postgres';
+import mysql from 'mysql2/promise';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -10,22 +10,20 @@ if (!DATABASE_URL) {
   throw new Error('DATABASE_URL environment variable is required');
 }
 
-const sql = postgres(DATABASE_URL, {
-  ssl: 'require',
-});
-
 async function testConnection() {
+  let connection;
   try {
-    // Check if users table exists
-    const tableExists = await sql`
-      SELECT EXISTS (
-        SELECT FROM information_schema.tables 
-        WHERE table_schema = 'public' 
-        AND table_name = 'users'
-      );
-    `;
+    connection = await mysql.createConnection(DATABASE_URL as string);
 
-    if (tableExists[0].exists) {
+    // Check if users table exists
+    const [rows] = await connection.execute<mysql.RowDataPacket[]>(`
+      SELECT COUNT(*)
+      FROM information_schema.tables 
+      WHERE table_schema = 'mutabaah' 
+      AND table_name = 'users'
+    `);
+
+    if (rows[0]['COUNT(*)'] > 0) {
       console.log('Database connection successful!');
       console.log('Users table exists');
     } else {
@@ -34,7 +32,9 @@ async function testConnection() {
   } catch (error) {
     console.error('Database connection failed:', error);
   } finally {
-    await sql.end();
+    if (connection) {
+      await connection.end();
+    }
   }
 }
 
