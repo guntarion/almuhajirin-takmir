@@ -45,3 +45,15 @@ export function CardContent({
     <div className={`p-6 pt-0 ${className}`} {...props} />
   );
 }
+
+export function CardDescription({
+  className = '',
+  ...props
+}: React.HTMLAttributes<HTMLParagraphElement>) {
+  return (
+    <p
+      className={`text-sm text-muted-foreground ${className}`}
+      {...props}
+    />
+  );
+}

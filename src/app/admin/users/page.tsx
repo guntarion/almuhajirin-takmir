@@ -2,57 +2,46 @@
 
 import { useState, useEffect } from 'react';
 import { UserRole } from '../../../lib/types/auth';
-import { UserForm, userFormSchema } from '../../../components/kelola-user/user-form';
+import { UserForm, type UserFormData } from '../../../components/kelola-user/user-form';
 import { useRouter } from 'next/navigation';
-import { 
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow 
-} from '../../../components/ui/table';
-import { 
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem, 
-  DropdownMenuTrigger 
-} from '../../../components/ui/dropdown-menu';
-import { 
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger 
-} from '../../../components/ui/dialog';
-import { 
-  Tabs, TabsContent, TabsList, TabsTrigger 
-} from '../../../components/ui/tabs';
-import { 
-  Card, CardContent, CardDescription, CardHeader, CardTitle 
-} from '../../../components/ui/card';
+import { Table, TableRow, TableCell } from '../../../components/ui/table';
+import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card';
 import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
-import { 
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue 
-} from '../../../components/ui/select';
-import { Badge } from '../../../components/ui/badge';
-import { 
-  MoreHorizontal, UserPlus, Search, Filter, Download, Trash2, Edit, Eye, 
-  UserCheck, UserX, RefreshCw 
-} from 'lucide-react';
-import type { z } from 'zod';
+import { Select } from '../../../components/ui/select';
+import { UserPlus, Search, Download, RefreshCw } from 'lucide-react';
 
-interface User {
+// Base user interface from API
+interface BaseUser {
   id: string;
   name: string;
   panggilan: string;
-  gender: string;
+  gender: "Lelaki" | "Perempuan";
   username: string;
   email: string;
   role: UserRole;
   active: boolean;
-  kategori: string;
+  kategori: "mkidz" | "laz";
   groupId?: string;
   tanggalLahir?: string;
   nomerWhatsapp?: string;
   alamatRumah?: string;
-  rwRumah?: string;
+  rwRumah?: "RW 6 Rewwin" | "RW 8 Rewwin" | "RW 9 Rewwin" | "other";
   rtRumah?: string;
   sekolah?: string;
   kelas?: number;
   keterangan?: string;
   createdAt: string;
   updatedAt: string;
+}
+
+interface ApiResponse {
+  data: BaseUser[];
+  pagination: {
+    total: number;
+    totalPages: number;
+  };
+  error?: string;
 }
 
 interface PaginationInfo {
@@ -62,12 +51,35 @@ interface PaginationInfo {
   totalPages: number;
 }
 
-type FormRole = z.infer<typeof userFormSchema>['role'];
-type UserFormData = z.infer<typeof userFormSchema>;
+// Role options for select
+const roleOptions = [
+  { value: "", label: "All Roles" },
+  { value: UserRole.KOORDINATOR_ANAKREMAS, label: "Koordinator" },
+  { value: UserRole.ANAK_REMAS, label: "Anggota" },
+  { value: UserRole.MARBOT, label: "Marbot" },
+  { value: UserRole.TAKMIR, label: "Takmir" },
+  { value: UserRole.ADMIN, label: "Admin" },
+  { value: UserRole.ORANG_TUA, label: "Orang Tua/Wali" }
+];
+
+// Status options for select
+const statusOptions = [
+  { value: "", label: "All Status" },
+  { value: "active", label: "Active" },
+  { value: "inactive", label: "Inactive" }
+];
+
+// Bulk action options
+const bulkActionOptions = [
+  { value: "", label: "Select Action" },
+  { value: "activate", label: "Activate" },
+  { value: "deactivate", label: "Deactivate" },
+  { value: "delete", label: "Delete" }
+];
 
 export default function AdminUsersPage() {
   const router = useRouter();
-  const [users, setUsers] = useState<User[]>([]);
+  const [users, setUsers] = useState<BaseUser[]>([]);
   const [pagination, setPagination] = useState<PaginationInfo>({
     page: 1,
     limit: 10,
@@ -75,9 +87,8 @@ export default function AdminUsersPage() {
     totalPages: 0,
   });
   const [error, setError] = useState<string | null>(null);
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [selectedUser, setSelectedUser] = useState<BaseUser | null>(null);
   const [showForm, setShowForm] = useState(false);
-  const [showViewUser, setShowViewUser] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRole, setSelectedRole] = useState<UserRole | ''>('');
   const [selectedStatus, setSelectedStatus] = useState<'active' | 'inactive' | ''>('');
@@ -87,6 +98,25 @@ export default function AdminUsersPage() {
   const [bulkAction, setBulkAction] = useState<'activate' | 'deactivate' | 'delete' | ''>('');
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const [selectAll, setSelectAll] = useState(false);
+
+  // Table headers
+  const tableHeaders = [
+    "",
+    "Name",
+    "Username",
+    "Email",
+    "Role",
+    "Status",
+    "Created At",
+    "Actions"
+  ];
+
+  // Convert date string to Date object
+  const convertToDate = (dateString?: string): Date | undefined => {
+    if (!dateString) return undefined;
+    const date = new Date(dateString);
+    return isNaN(date.getTime()) ? undefined : date;
+  };
 
   // Fetch users with pagination, search, and filters
   const fetchUsers = async () => {
@@ -101,7 +131,7 @@ export default function AdminUsersPage() {
       });
 
       const response = await fetch(`/api/users?${params}`);
-      const data = await response.json();
+      const data = (await response.json()) as ApiResponse;
 
       if (!response.ok) {
         if (response.status === 401) {
@@ -130,12 +160,12 @@ export default function AdminUsersPage() {
   }, [pagination.page, searchTerm, selectedRole, selectedStatus]);
 
   // Handle user creation
-  const handleCreateUser = async (data: UserFormData) => {
+  const handleCreateUser = async (userData: UserFormData) => {
     try {
       const response = await fetch('/api/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
+        body: JSON.stringify(userData),
       });
 
       const result = await response.json();
@@ -157,14 +187,14 @@ export default function AdminUsersPage() {
   };
 
   // Handle user update
-  const handleUpdateUser = async (data: UserFormData) => {
+  const handleUpdateUser = async (userData: UserFormData) => {
     if (!selectedUser) return;
 
     try {
       const response = await fetch(`/api/users?id=${selectedUser.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
+        body: JSON.stringify(userData),
       });
 
       const result = await response.json();
@@ -305,7 +335,7 @@ export default function AdminUsersPage() {
       <Card className="mb-6">
         <CardHeader>
           <CardTitle>Filters</CardTitle>
-          <CardDescription>Filter users by various criteria</CardDescription>
+          <p className="text-sm text-gray-500">Filter users by various criteria</p>
         </CardHeader>
         <CardContent>
           <div className='flex flex-col md:flex-row gap-4'>
@@ -322,31 +352,19 @@ export default function AdminUsersPage() {
               </div>
             </div>
             
-            <Select value={selectedRole} onValueChange={(value) => setSelectedRole(value as UserRole | '')}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="All Roles" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="">All Roles</SelectItem>
-                <SelectItem value={UserRole.KOORDINATOR_ANAKREMAS}>Koordinator</SelectItem>
-                <SelectItem value={UserRole.ANAK_REMAS}>Anggota</SelectItem>
-                <SelectItem value={UserRole.MARBOT}>Marbot</SelectItem>
-                <SelectItem value={UserRole.TAKMIR}>Takmir</SelectItem>
-                <SelectItem value={UserRole.ADMIN}>Admin</SelectItem>
-                <SelectItem value={UserRole.ORANG_TUA}>Orang Tua/Wali</SelectItem>
-              </SelectContent>
-            </Select>
+            <Select
+              value={selectedRole}
+              onChange={(e) => setSelectedRole(e.target.value as UserRole | '')}
+              options={roleOptions}
+              className="w-[180px]"
+            />
             
-            <Select value={selectedStatus} onValueChange={(value) => setSelectedStatus(value as 'active' | 'inactive' | '')}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="All Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="">All Status</SelectItem>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="inactive">Inactive</SelectItem>
-              </SelectContent>
-            </Select>
+            <Select
+              value={selectedStatus}
+              onChange={(e) => setSelectedStatus(e.target.value as 'active' | 'inactive' | '')}
+              options={statusOptions}
+              className="w-[180px]"
+            />
             
             <Button variant="outline" onClick={() => fetchUsers()}>
               <RefreshCw className="h-4 w-4 mr-2" />
@@ -368,18 +386,151 @@ export default function AdminUsersPage() {
             <span className="font-medium">{selectedUsers.length} users selected</span>
           </div>
           <div className="flex gap-2">
-            <Select value={bulkAction} onValueChange={(value) => setBulkAction(value as 'activate' | 'deactivate' | 'delete' | '')}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Bulk Actions" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="">Select Action</SelectItem>
-                <SelectItem value="activate">Activate</SelectItem>
-                <SelectItem value="deactivate">Deactivate</SelectItem>
-                <SelectItem value="delete">Delete</SelectItem>
-              </SelectContent>
-            </Select>
+            <Select
+              value={bulkAction}
+              onChange={(e) => setBulkAction(e.target.value as 'activate' | 'deactivate' | 'delete' | '')}
+              options={bulkActionOptions}
+              className="w-[180px]"
+            />
             <Button 
               variant="default" 
               onClick={handleBulkAction}
-              disabled={!bul
+              disabled={!bulkAction || selectedUsers.length === 0}
+            >
+              Apply
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Users Table */}
+      <div className="bg-white rounded-lg shadow overflow-hidden">
+        {loading ? (
+          <div className="p-4 text-center">Loading...</div>
+        ) : error ? (
+          <div className="p-4 text-center text-red-500">{error}</div>
+        ) : (
+          <Table headers={tableHeaders}>
+            {users.map((user) => (
+              <TableRow key={user.id}>
+                <TableCell>
+                  <input
+                    type="checkbox"
+                    checked={selectedUsers.includes(user.id)}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setSelectedUsers([...selectedUsers, user.id]);
+                      } else {
+                        setSelectedUsers(selectedUsers.filter(id => id !== user.id));
+                      }
+                    }}
+                  />
+                </TableCell>
+                <TableCell>{user.name}</TableCell>
+                <TableCell>{user.username}</TableCell>
+                <TableCell>{user.email}</TableCell>
+                <TableCell>{user.role}</TableCell>
+                <TableCell>
+                  <span className={`px-2 py-1 rounded-full text-xs ${
+                    user.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                  }`}>
+                    {user.active ? 'Active' : 'Inactive'}
+                  </span>
+                </TableCell>
+                <TableCell>{new Date(user.createdAt).toLocaleDateString()}</TableCell>
+                <TableCell>
+                  <div className="flex space-x-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setSelectedUser(user);
+                        setShowForm(true);
+                      }}
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setUserToDelete(user.id);
+                        setShowDeleteConfirm(true);
+                      }}
+                    >
+                      Delete
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </Table>
+        )}
+      </div>
+
+      {/* Pagination */}
+      <div className="mt-4 flex justify-between items-center">
+        <div>
+          <span className="text-sm text-gray-500">
+            Showing {((pagination.page - 1) * pagination.limit) + 1} to {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total} users
+          </span>
+        </div>
+        <div className="flex space-x-2">
+          <Button
+            variant="outline"
+            onClick={() => setPagination({ ...pagination, page: pagination.page - 1 })}
+            disabled={pagination.page === 1}
+          >
+            Previous
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => setPagination({ ...pagination, page: pagination.page + 1 })}
+            disabled={pagination.page === pagination.totalPages}
+          >
+            Next
+          </Button>
+        </div>
+      </div>
+
+      {/* Create/Edit User Form */}
+      {showForm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-lg max-w-2xl w-full">
+            <h2 className="text-2xl font-bold mb-4">
+              {selectedUser ? 'Edit User' : 'Create User'}
+            </h2>
+            <UserForm
+              onSubmit={selectedUser ? handleUpdateUser : handleCreateUser}
+              initialData={selectedUser ? {
+                ...selectedUser,
+                tanggalLahir: convertToDate(selectedUser.tanggalLahir)
+              } : undefined}
+              onCancel={() => {
+                setShowForm(false);
+                setSelectedUser(null);
+              }}
+              isEditing={!!selectedUser}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-lg">
+            <h2 className="text-xl font-bold mb-4">Confirm Delete</h2>
+            <p>Are you sure you want to delete this user?</p>
+            <div className="mt-4 flex justify-end space-x-2">
+              <Button variant="outline" onClick={() => setShowDeleteConfirm(false)}>
+                Cancel
+              </Button>
+              <Button variant="destructive" onClick={handleDeleteUser}>
+                Delete
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

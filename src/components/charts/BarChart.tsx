@@ -85,3 +85,5 @@ export function BarChart({ data, xKey, yKey, height = 300 }: BarChartProps) {
 
   }, [data, xKey, yKey, height]);
 
+  return <div ref={chartRef} className="w-full" />;
+}

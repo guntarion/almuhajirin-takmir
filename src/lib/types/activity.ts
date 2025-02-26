@@ -18,6 +18,19 @@ export interface ActivityResponse {
   error?: string;
 }
 
+export interface ActivityStats {
+  total: number;
+  today: number;
+  byType: Record<ActivityType, number>;
+  recentActivities: Array<{
+    id: string;
+    type: ActivityType;
+    metadata: string;
+    date: string;
+    userName: string;
+  }>;
+}
+
 // Utility function to create activity metadata
 export function createActivityMetadata(
   url: string, 

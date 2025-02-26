@@ -1,4 +1,3 @@
-// src/components/kelola-user/user-form.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -42,15 +41,17 @@ export const userFormSchema = z
     }
   );
 
-type UserFormData = z.infer<typeof userFormSchema>;
+export type UserFormData = z.infer<typeof userFormSchema>;
 
 interface UserFormProps {
   initialData?: Partial<UserFormData>;
   onSubmit: (data: UserFormData) => Promise<void>;
+  onCancel: () => void;
   isEditing?: boolean;
 }
 
-export function UserForm({ initialData, onSubmit, isEditing = false }: UserFormProps) {
+export function UserForm({ initialData, onSubmit, onCancel, isEditing = false }: UserFormProps) {
+  // Rest of the component implementation remains the same
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [anakremasList, setAnakremasList] = useState<Array<{ id: string; name: string }>>([]);
@@ -336,11 +337,14 @@ export function UserForm({ initialData, onSubmit, isEditing = false }: UserFormP
         )}
       </div>
 
-      <div className='col-span-2'>
+      <div className='col-span-2 flex justify-end space-x-2'>
+        <button type='button' className='px-4 py-2 text-sm border rounded-md hover:bg-gray-50' onClick={onCancel}>
+          Cancel
+        </button>
         <button
           type='submit'
           disabled={isLoading}
-          className='w-full px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50'
+          className='px-4 py-2 text-sm text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50'
         >
           {isLoading ? 'Saving...' : isEditing ? 'Update User' : 'Create User'}
         </button>
