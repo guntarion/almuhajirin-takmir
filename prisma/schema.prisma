@@ -10,25 +10,25 @@ generator client {
 
 // Models
 model Post {
-  id          String      @id @default(cuid())
-  title       String
-  content     String
-  excerpt     String?
-  category    String      @default("PENGUMUMAN")
-  tags        String      @default("[]")
-  status      String      @default("DRAFT")
-  isPinned    Boolean     @default(false)
-  isApproved  Boolean     @default(true)
-  viewCount   Int         @default(0)
-  authorId    String
-  author      User        @relation(fields: [authorId], references: [id])
-  comments    Comment[]
-  reactions   PostReaction[]
-  bookmarks   Bookmark[]
+  id            String         @id @default(cuid())
+  title         String
+  content       String
+  excerpt       String?
+  category      String         @default("PENGUMUMAN")
+  tags          String         @default("[]")
+  status        String         @default("DRAFT")
+  isPinned      Boolean        @default(false)
+  isApproved    Boolean        @default(true)
+  viewCount     Int            @default(0)
+  authorId      String
+  author        User           @relation(fields: [authorId], references: [id])
+  comments      Comment[]
+  reactions     PostReaction[]
+  bookmarks     Bookmark[]
   notifications Notification[]
-  postViews   PostView[]
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  postViews     PostView[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
 
   @@index([category])
   @@index([status])
@@ -40,19 +40,19 @@ model Post {
 }
 
 model Comment {
-  id          String      @id @default(cuid())
-  content     String
-  postId      String
-  post        Post        @relation(fields: [postId], references: [id])
-  authorId    String
-  author      User        @relation(fields: [authorId], references: [id])
-  parentId    String?
-  parent      Comment?    @relation("CommentReplies", fields: [parentId], references: [id])
-  replies     Comment[]   @relation("CommentReplies")
-  status      String      @default("PENDING")
+  id            String         @id @default(cuid())
+  content       String
+  postId        String
+  post          Post           @relation(fields: [postId], references: [id])
+  authorId      String
+  author        User           @relation(fields: [authorId], references: [id])
+  parentId      String?
+  parent        Comment?       @relation("CommentReplies", fields: [parentId], references: [id])
+  replies       Comment[]      @relation("CommentReplies")
+  status        String         @default("PENDING")
   notifications Notification[]
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
 
   @@index([postId])
   @@index([parentId])
@@ -60,54 +60,171 @@ model Comment {
 }
 
 model PostReaction {
-  id          String      @id @default(cuid())
-  type        String      @default("LIKE")
-  user        User        @relation(fields: [userId], references: [id])
-  userId      String
-  post        Post        @relation(fields: [postId], references: [id])
-  postId      String
-  createdAt   DateTime    @default(now())
+  id        String   @id @default(cuid())
+  type      String   @default("LIKE")
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  post      Post     @relation(fields: [postId], references: [id])
+  postId    String
+  createdAt DateTime @default(now())
 
   @@unique([userId, postId])
   @@map("post_reactions")
 }
 
 model Bookmark {
-  id          String      @id @default(cuid())
-  user        User        @relation(fields: [userId], references: [id])
-  userId      String
-  post        Post        @relation(fields: [postId], references: [id])
-  postId      String
-  createdAt   DateTime    @default(now())
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  post      Post     @relation(fields: [postId], references: [id])
+  postId    String
+  createdAt DateTime @default(now())
 
   @@unique([userId, postId])
   @@map("bookmarks")
 }
 
 model Notification {
-  id          String      @id @default(cuid())
-  type        String      @default("COMMENT")
-  user        User        @relation(fields: [userId], references: [id])
-  userId      String
-  post        Post?       @relation(fields: [postId], references: [id])
-  postId      String?
-  comment     Comment?    @relation(fields: [commentId], references: [id])
-  commentId   String?
-  isRead      Boolean     @default(false)
-  createdAt   DateTime    @default(now())
+  id        String   @id @default(cuid())
+  type      String   @default("COMMENT")
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  post      Post?    @relation(fields: [postId], references: [id])
+  postId    String?
+  comment   Comment? @relation(fields: [commentId], references: [id])
+  commentId String?
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
 
   @@map("notifications")
 }
 
 model User {
+  id                           String                      @id @default(cuid())
+  name                         String
+  panggilan                    String                      @default("")
+  gender                       String                      @default("")
+  username                     String                      @unique
+  email                        String                      @unique
+  password                     String
+  role                         String                      @default("ANAK_REMAS")
+  active                       Boolean                     @default(true)
+  kategori                     String                      @default("mkidz")
+  groupId                      String?
+  avatar                       String?                     @default("/avatars/avatar-01.jpg")
+  tanggalLahir                 DateTime?
+  age                          Int                         @default(0)
+  nomerWhatsapp                String?
+  alamatRumah                  String?
+  rwRumah                      String?
+  rtRumah                      String?
+  sekolah                      String?
+  kelas                        Int?
+  keterangan                   String?
+  createdAt                    DateTime                    @default(now())
+  updatedAt                    DateTime                    @updatedAt
+  submittedActivities          UserActivity[]              @relation("submittedActivities")
+  validatedActivities          UserActivity[]              @relation("validatedActivities")
+  achievements                 UserAchievement[]
+  streaks                      UserStreak[]
+  dailyScores                  DailyScore[]
+  weeklyScores                 WeeklyScore[]
+  monthlyScores                MonthlyScore[]
+  penalties                    UserPenalty[]
+  level                        UserLevel?
+  posts                        Post[]
+  comments                     Comment[]
+  postReactions                PostReaction[]
+  bookmarks                    Bookmark[]
+  notifications                Notification[]
+  postViews                    PostView[]
+  activityValidations          ActivityValidator[]         @relation("validatorUser")
+  validationHistory            ActivityValidationHistory[] @relation("validatorHistory")
+  orangTuaAnakRemasAsOrangTua  OrangTuaAnakRemas[]         @relation("orangTua")
+  orangTuaAnakRemasAsAnakRemas OrangTuaAnakRemas[]         @relation("anakRemas")
+
+  @@map("users")
+}
+
+// Constants that will be enforced at application level
+// ActivityCategory: IBADAH, AKHLAK, PEMBELAJARAN, KAJIAN, DAKWAH, SOSIAL, LAINNYA
+// UserRole: KOORDINATOR_ANAKREMAS, ANAK_REMAS, MARBOT, TAKMIR, ADMIN, ORANG_TUA
+// ActivityStatus: PENDING, VALIDATED, REJECTED
+
+model Activity {
+  id              String   @id @default(cuid())
+  name            String
+  category        String   @default("AKHLAK")
+  type            String   @default("TAMBAHAN") // UTAMA atau TAMBAHAN
+  userCategories  String   @default("mkidz") // Comma-separated categories (mkidz,laz)
+  minFrequency    Int      @default(1) // Frekuensi minimal harian
+  maxFrequency    Int // Frekuensi maksimal harian
+  basePoints      Int
+  description     String?
+  icon            String?
+  isNegative      Boolean  @default(false)
+  needsProof      Boolean  @default(false)
+  validationRoles String   @default("KOORDINATOR_ANAKREMAS") // Comma-separated roles
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  active          Boolean  @default(true)
+
+  userActivities UserActivity[]
+  validators     ActivityValidator[]
+  targets        ActivityTarget[]
+  combos         ActivityCombo[]     @relation("activityCombos")
+
+  @@map("activities")
+}
+
+model UserActivity {
+  id              String    @id @default(cuid())
+  userId          String
+  activityId      String
+  date            DateTime
+  points          Int
+  multiplier      Float     @default(1)
+  finalPoints     Int
+  proof           String? // URL to proof if needed
+  status          String    @default("PENDING") // PENDING, VALIDATED, REJECTED
+  validatedById   String?
+  validatedAt     DateTime?
+  rejectionReason String? // TAK_DILAKUKAN, TAK_CUKUP_BUKTI
+  notes           String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  user        User     @relation("submittedActivities", fields: [userId], references: [id])
+  activity    Activity @relation(fields: [activityId], references: [id])
+  validatedBy User?    @relation("validatedActivities", fields: [validatedById], references: [id])
+
+  validationHistory ActivityValidationHistory[]
+
+  @@index([userId, date])
+  @@index([status])
+}
+
+model Achievement {
+  id          String   @id @default(cuid())
+  name        String
+  type        String // BASIC, COMBO, STREAK, SPECIAL
+  description String
+  icon        String
+  conditions  String // JSON string for conditions
+  multiplier  Float    @default(1)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  active      Boolean  @default(true)
+
+  userAchievements UserAchievement[]
+}
+
+model UserAchievement {
   id            String    @id @default(cuid())
-  name          String
-  panggilan     String    @default("")
-  gender        String    @default("")
-  username      String    @unique
-  email         String    @unique
-  password      String
-  role          String    @default("ANAK_REMAS")
+  userId        String
+  achievementId String
+  earnedAt      DateTime  @default(now())
+  expiresAt     DateTime?
   active        Boolean   @default(true)
   kategori      String    @default("mkidz")
   groupId       String?
@@ -129,11 +246,10 @@ model User {
   bookmarks     Bookmark[]
   notifications Notification[]
   postViews     PostView[]
-  activities    UserActivity[]
   orangTuaAnakRemasAsOrangTua    OrangTuaAnakRemas[] @relation("orangTua")
   orangTuaAnakRemasAsAnakRemas   OrangTuaAnakRemas[] @relation("anakRemas")
 
-  @@map("users")
+  @@index([userActivityId])
 }
 
 model OrangTuaAnakRemas {
@@ -141,7 +257,7 @@ model OrangTuaAnakRemas {
   orangTuaId  String
   anakRemasId String
   createdAt   DateTime @default(now())
-  
+
   orangTua  User @relation("orangTua", fields: [orangTuaId], references: [id])
   anakRemas User @relation("anakRemas", fields: [anakRemasId], references: [id])
 
