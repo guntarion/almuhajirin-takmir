@@ -9,7 +9,7 @@ import { Suspense } from 'react';
 import { prisma } from '../../lib/prisma';
 import ClientBBSPage from './client-page';
 import { Post } from '../../lib/types/bbs';
-import { getCurrentUser } from '../../lib/auth';
+import { getCurrentUser } from '../../lib/utils/auth';
 
 // Fetch posts from database
 async function getPosts(): Promise<Post[]> {

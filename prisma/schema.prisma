@@ -1,14 +1,12 @@
-datasource db {
-  provider = "mysql"
-  url      = env("DATABASE_URL")
-}
-
 generator client {
-  provider        = "prisma-client-js"
-  previewFeatures = ["referentialActions"]
+  provider = "prisma-client-js"
 }
 
-// Models
+datasource db {
+  provider = "sqlite"
+  url      = "file:./../data/databasemuhajirin.db"
+}
+
 model Post {
   id            String         @id @default(cuid())
   title         String
@@ -120,7 +118,7 @@ model User {
   rtRumah                      String?
   sekolah                      String?
   kelas                        Int?
-  keterangan                   String?
+  keterangan                   String?  
   createdAt                    DateTime                    @default(now())
   updatedAt                    DateTime                    @updatedAt
   submittedActivities          UserActivity[]              @relation("submittedActivities")
@@ -174,7 +172,7 @@ model Activity {
   targets        ActivityTarget[]
   combos         ActivityCombo[]     @relation("activityCombos")
 
-  @@map("activities")
+  @@map("Activity") // Explicitly map the model to the "Activity" table
 }
 
 model UserActivity {
@@ -226,28 +224,155 @@ model UserAchievement {
   earnedAt      DateTime  @default(now())
   expiresAt     DateTime?
   active        Boolean   @default(true)
-  kategori      String    @default("mkidz")
-  groupId       String?
-  avatar        String?   @default("/avatars/avatar-01.jpg")
-  tanggalLahir  DateTime?
-  age           Int       @default(0)
-  nomerWhatsapp String?
-  alamatRumah   String?
-  rwRumah       String?
-  rtRumah       String?
-  sekolah       String?
-  kelas         Int?
-  keterangan    String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  posts         Post[]
-  comments      Comment[]
-  postReactions PostReaction[]
-  bookmarks     Bookmark[]
-  notifications Notification[]
-  postViews     PostView[]
-  orangTuaAnakRemasAsOrangTua    OrangTuaAnakRemas[] @relation("orangTua")
-  orangTuaAnakRemasAsAnakRemas   OrangTuaAnakRemas[] @relation("anakRemas")
+
+  user        User        @relation(fields: [userId], references: [id])
+  achievement Achievement @relation(fields: [achievementId], references: [id])
+}
+
+model UserStreak {
+  id            String   @id @default(cuid())
+  userId        String
+  activityId    String
+  currentStreak Int      @default(0)
+  maxStreak     Int      @default(0)
+  lastActivity  DateTime
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model DailyScore {
+  id           String   @id @default(cuid())
+  userId       String
+  date         DateTime
+  skorTotal    Int
+  skorPositif  Int      @default(0)
+  skorNegatif  Int      @default(0)
+  utamaDone    Int      @default(0) // Jumlah aktivitas utama yang dilakukan
+  tambahanDone Int      @default(0) // Jumlah aktivitas tambahan yang dilakukan
+  trophy       String? // BRONZE, SILVER, GOLD, STAR
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model WeeklyScore {
+  id          String   @id @default(cuid())
+  userId      String
+  weekNumber  Int
+  year        Int
+  totalPoints Int
+  skorPositif Int      @default(0)
+  skorNegatif Int      @default(0)
+  trophy      String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([userId, weekNumber, year])
+}
+
+model MonthlyScore {
+  id          String   @id @default(cuid())
+  userId      String
+  month       Int
+  year        Int
+  totalPoints Int
+  skorPositif Int      @default(0)
+  skorNegatif Int      @default(0)
+  trophy      String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([userId, month, year])
+}
+
+model ActivityTarget {
+  id              String   @id @default(cuid())
+  userCategory    String // mkidz atau laz
+  activityId      String
+  minDaily        Int      @default(0)
+  maxDaily        Int
+  pointMultiplier Float    @default(1.0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  activity Activity @relation(fields: [activityId], references: [id])
+
+  @@unique([userCategory, activityId])
+}
+
+model UserLevel {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  level       String // PRAJURIT, SERSAN, etc.
+  skorTotal   Int      @default(0)
+  skorPositif Int      @default(0)
+  skorNegatif Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model UserPenalty {
+  id        String    @id @default(cuid())
+  userId    String
+  type      String // YELLOW_CARD, RED_CARD
+  reason    String
+  startDate DateTime  @default(now())
+  endDate   DateTime?
+  resolved  Boolean   @default(false)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model ActivityCombo {
+  id         String   @id @default(cuid())
+  name       String
+  activities String // Comma-separated activity IDs
+  multiplier Float
+  timeWindow Int // in minutes
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  active     Boolean  @default(true)
+
+  activity Activity @relation("activityCombos", fields: [activities], references: [id])
+}
+
+model ActivityValidator {
+  id          String   @id @default(cuid())
+  activityId  String
+  validatorId String
+  role        String // KOORDINATOR_ANAKREMAS, ANAK_REMAS, etc
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  active      Boolean  @default(true)
+
+  activity Activity @relation(fields: [activityId], references: [id])
+  user     User     @relation("validatorUser", fields: [validatorId], references: [id])
+
+  @@unique([activityId, validatorId])
+}
+
+model ActivityValidationHistory {
+  id             String   @id @default(cuid())
+  userActivityId String
+  validatorId    String
+  oldStatus      String // PENDING, VALIDATED, REJECTED
+  newStatus      String // PENDING, VALIDATED, REJECTED
+  notes          String?
+  createdAt      DateTime @default(now())
+
+  userActivity UserActivity @relation(fields: [userActivityId], references: [id])
+  validator    User         @relation("validatorHistory", fields: [validatorId], references: [id])
 
   @@index([userActivityId])
 }
@@ -278,18 +403,4 @@ model PostView {
   @@index([postId])
   @@index([userId])
   @@map("post_views")
-}
-
-model UserActivity {
-  id        String   @id @default(uuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
-  type      String   // LOGIN, POST_CREATE, COMMENT, etc.
-  metadata  String?  @db.Text  // JSON string containing url, method, userAgent
-  date      DateTime @default(now())
-
-  @@index([userId])
-  @@index([type])
-  @@index([date])
-  @@map("user_activities")
 }

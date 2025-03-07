@@ -45,49 +45,49 @@ export default function RootLayout({
 
             {/* Sidebar */}
             <div
-              className={`fixed md:relative z-40 w-64 bg-[#00879b] text-white p-4 transform transition-all duration-300 ease-in-out ${
+              className={`fixed md:relative z-40 w-64 bg-white border-r p-4 transform transition-all duration-300 ease-in-out h-full shadow-lg ${
                 isSidebarOpen ? 'translate-x-0 shadow-lg' : '-translate-x-full md:translate-x-0'
               }`}
             >
               <div className='flex items-center justify-between mb-8'>
                 <Link href='/' className='flex items-center gap-2'>
                   <Image src='/logo-yamr.png' alt='Logo' width={32} height={32} priority style={{ objectFit: 'contain' }} />
-                  <h1 className='text-xl font-bold'>Al-Muhajirin</h1>
+                  <h1 className='text-xl font-bold text-[#00879b]'>Al-Muhajirin</h1>
                 </Link>
                 <button onClick={() => setIsSidebarOpen(false)} className='p-1 md:hidden'>
                   <Menu className='w-6 h-6 rotate-45' />
                 </button>
               </div>
               <nav>
-                <Link href='/home' className='flex items-center p-2 rounded-lg hover:bg-gray-700'>
-                  <Home className='w-5 h-5 mr-2' />
+                <Link href='/home' className='flex items-center p-3 rounded-lg hover:bg-gray-100 mb-2 text-gray-700 font-medium'>
+                  <Home className='w-5 h-5 mr-2 text-[#00879b]' />
                   <span>Home</span>
                 </Link>
-                <Link href='/bbs' className='flex items-center p-2 rounded-lg hover:bg-gray-700'>
-                  <MessageSquare className='w-5 h-5 mr-2' />
+                <Link href='/bbs' className='flex items-center p-3 rounded-lg hover:bg-gray-100 mb-2 text-gray-700 font-medium'>
+                  <MessageSquare className='w-5 h-5 mr-2 text-[#00879b]' />
                   <span>Board</span>
                 </Link>
-                <Link href='/aktivitas' className='flex items-center p-2 rounded-lg hover:bg-gray-700 mt-2'>
-                  <Activity className='w-5 h-5 mr-2' />
+                <Link href='/aktivitas' className='flex items-center p-3 rounded-lg hover:bg-gray-100 mb-2 text-gray-700 font-medium'>
+                  <Activity className='w-5 h-5 mr-2 text-[#00879b]' />
                   <span>Aktivitas</span>
                 </Link>
-                <Link href='/leaderboard' className='flex items-center p-2 rounded-lg hover:bg-gray-700 mt-2'>
-                  <Trophy className='w-5 h-5 mr-2' />
+                <Link href='/leaderboard' className='flex items-center p-3 rounded-lg hover:bg-gray-100 mb-2 text-gray-700 font-medium'>
+                  <Trophy className='w-5 h-5 mr-2 text-[#00879b]' />
                   <span>Leaderboard</span>
                 </Link>
-                <Link href='/profil' className='flex items-center p-2 rounded-lg hover:bg-gray-700'>
-                  <UserCog className='w-5 h-5 mr-2' />
+                <Link href='/profil' className='flex items-center p-3 rounded-lg hover:bg-gray-100 mb-2 text-gray-700 font-medium'>
+                  <UserCog className='w-5 h-5 mr-2 text-[#00879b]' />
                   <span>Profil</span>
                 </Link>
-                <Link href='/kelola-user' className='flex items-center p-2 rounded-lg hover:bg-gray-700 mt-2'>
-                  <Users className='w-5 h-5 mr-2' />
+                <Link href='/kelola-user' className='flex items-center p-3 rounded-lg hover:bg-gray-100 mb-2 text-gray-700 font-medium'>
+                  <Users className='w-5 h-5 mr-2 text-[#00879b]' />
                   <span>Kelola User</span>
                 </Link>
-                <Link href='/admin/aktivitas' className='flex items-center p-2 rounded-lg hover:bg-gray-700 mt-2'>
-                  <Activity className='w-5 h-5 mr-2' />
+                <Link href='/admin/aktivitas' className='flex items-center p-3 rounded-lg hover:bg-gray-100 mb-2 text-gray-700 font-medium'>
+                  <Activity className='w-5 h-5 mr-2 text-[#00879b]' />
                   <span>Kelola Aktivitas</span>
                 </Link>
-                <div className='mt-4 border-t border-gray-700 pt-4'>
+                <div className='mt-6 border-t border-gray-200 pt-4'>
                   <LogoutButton />
                 </div>
               </nav>
